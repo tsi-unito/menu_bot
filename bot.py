@@ -25,7 +25,11 @@ def remove_job_if_exists(name: str, context: ContextTypes.DEFAULT_TYPE) -> bool:
 
 
 async def menu_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await context.bot.send_message(chat_id=update.effective_chat.id,
+    if datetime.datetime.today().weekday() == 5 or datetime.datetime.today().weekday() == 6:
+        await context.bot.send_message(chat_id=update.effective_chat.id,
+                                       text="Oggi il ristorante è chiuso")
+    else:
+        await context.bot.send_message(chat_id=update.effective_chat.id,
                                    text=scraper.get_menu(f"{update.message.text[1:]}")["text"])
 
 
@@ -44,7 +48,7 @@ async def menu_command_callback(context: ContextTypes.DEFAULT_TYPE):
 async def subscription_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id = update.effective_message.chat_id
     try:
-        context.job_queue.run_daily(menu_command_callback, #days=(1, 2, 3, 4, 5),
+        context.job_queue.run_daily(menu_command_callback, days=(1, 2, 3, 4, 5),
                                     time=datetime.time(hour=11, minute=30, second=00, tzinfo=pytz.timezone('Europe/Rome')), #Due to a bug Job_queue is skipping job if timezone is not provided for job.run_daily.
                                     chat_id=chat_id, user_id= update.effective_user.id, name=f"{chat_id}_{update.message.text[11:]}", data=update.message.text[11:])
     except (IndexError, ValueError):
