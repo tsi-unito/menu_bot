@@ -22,6 +22,7 @@ def remove_job_if_exists(name: str, context: ContextTypes.DEFAULT_TYPE) -> bool:
         return False
     for job in current_jobs:
         job.schedule_removal()
+    logging.info(f"removed job with name: {name}")
     return True
 
 
