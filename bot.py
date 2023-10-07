@@ -87,6 +87,7 @@ if __name__ == '__main__':
         config = json.load(file)
 
     DB_URI = f"mongodb://{config['dbuser']}:{config['dbpassword']}@{config['dburl']}:{config['dbport']}/admin?retryWrites=true&w=majority"
+    #TODO: use environment variables instead of config.json
 
     application = ApplicationBuilder().token(config['token']).build()
 
