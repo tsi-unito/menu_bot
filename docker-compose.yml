@@ -1,0 +1,30 @@
+version: '3.2'
+
+services:
+
+  mongo:
+    image: mongo
+    container_name: mongo
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: password
+    volumes:
+      - mongo_volume:/data/db
+
+  menu_scraper_bot:
+    build: .
+    container_name: menu_scraper_bot
+    restart: always
+    depends_on:
+      - mongo
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: password
+
+
+volumes:
+  mongo_volume:
+
+
+
