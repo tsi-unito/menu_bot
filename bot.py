@@ -25,7 +25,11 @@ def remove_job_if_exists(name: str, context: ContextTypes.DEFAULT_TYPE) -> bool:
 
 
 async def menu_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await context.bot.send_message(chat_id=update.effective_chat.id,
+    if datetime.datetime.today().weekday() == 5 or datetime.datetime.today().weekday() == 6:
+        await context.bot.send_message(chat_id=update.effective_chat.id,
+                                       text="Oggi il ristorante è chiuso")
+    else:
+        await context.bot.send_message(chat_id=update.effective_chat.id,
                                    text=scraper.get_menu(f"{update.message.text[1:]}")["text"])
 
 
