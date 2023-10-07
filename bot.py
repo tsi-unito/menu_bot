@@ -1,9 +1,6 @@
 import logging
 import datetime
-
 import pytz
-import telegram
-
 import scraper
 import json
 from telegram import Update
@@ -13,7 +10,9 @@ logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     level=logging.INFO
 )
-
+for log_name, log_obj in logging.Logger.manager.loggerDict.items():
+    if log_name == "httpx":
+        log_obj.disabled = True
 
 def remove_job_if_exists(name: str, context: ContextTypes.DEFAULT_TYPE) -> bool:
     """Remove job with given name. Returns whether job was removed."""
@@ -68,6 +67,7 @@ async def unknown(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 if __name__ == '__main__':
+
     with open("config.json", "r") as file:
         token = json.load(file)["token"]
     application = ApplicationBuilder().token(token).build()
