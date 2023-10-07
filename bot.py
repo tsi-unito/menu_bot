@@ -5,6 +5,7 @@ import scraper
 import json
 from telegram import Update
 from telegram.ext import ApplicationBuilder, ContextTypes, CommandHandler, MessageHandler, filters
+from ptbcontrib.ptb_jobstores.mongodb import PTBMongoDBJobStore
 
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
@@ -71,10 +72,22 @@ async def unknown(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 if __name__ == '__main__':
+    DB_URI = "mongodb://root:password@localhost:27017/admin?retryWrites=true&w=majority"
+
 
     with open("config.json", "r") as file:
         token = json.load(file)["token"]
     application = ApplicationBuilder().token(token).build()
+
+    application.job_queue.scheduler.add_jobstore(
+        PTBMongoDBJobStore(
+            application=application,
+            host=DB_URI,
+        )
+    )
+
+    for jobs in application.job_queue.jobs():
+        print(jobs.name)
 
     application.add_handler(CommandHandler('start', start))
     application.add_handler(CommandHandler('dubai', menu_command))
