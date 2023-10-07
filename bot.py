@@ -14,6 +14,7 @@ for log_name, log_obj in logging.Logger.manager.loggerDict.items():
     if log_name == "httpx":
         log_obj.disabled = True
 
+
 def remove_job_if_exists(name: str, context: ContextTypes.DEFAULT_TYPE) -> bool:
     """Remove job with given name. Returns whether job was removed."""
     current_jobs = context.job_queue.get_jobs_by_name(name)
@@ -30,7 +31,7 @@ async def menu_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
                                        text="Oggi il ristorante è chiuso")
     else:
         await context.bot.send_message(chat_id=update.effective_chat.id,
-                                   text=scraper.get_menu(f"{update.message.text[1:]}")["text"])
+                                       text=scraper.get_menu(f"{update.message.text[1:]}")["text"])
 
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -47,16 +48,25 @@ async def menu_command_callback(context: ContextTypes.DEFAULT_TYPE):
 
 async def subscription_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id = update.effective_message.chat_id
+    text = (f"Sottoscrizione effettuata, riceverai il menù del {update.message.text[10:]} ogni giorno alle 11:30\n Per "
+            f"cancellare la sottoscrizione scrivi /unsubscribe_{update.message.text[10:]}")
     try:
-        context.job_queue.run_daily(menu_command_callback, days=(1, 2, 3, 4, 5),
-                                    time=datetime.time(hour=11, minute=30, second=00, tzinfo=pytz.timezone('Europe/Rome')), #Due to a bug Job_queue is skipping job if timezone is not provided for job.run_daily.
-                                    chat_id=chat_id, user_id= update.effective_user.id, name=f"{chat_id}_{update.message.text[11:]}", data=update.message.text[11:])
+        if context.job_queue.get_jobs_by_name(f"{chat_id}_{update.message.text[11:]}"):
+            text = f"Sei già sottoscritto al menù del {update.message.text[11:]}"
+
+        else:
+            context.job_queue.run_daily(menu_command_callback, days=(1, 2, 3, 4, 5),
+                                        time=datetime.time(hour=11, minute=30, second=00,
+                                                           tzinfo=pytz.timezone('Europe/Rome')),
+                                        # Due to a bug Job_queue is skipping job if timezone is not provided for job.run_daily.
+                                        chat_id=chat_id, user_id=update.effective_user.id,
+                                        name=f"{chat_id}_{update.message.text[11:]}", data=update.message.text[11:])
+
     except (IndexError, ValueError):
-        await update.effective_message.reply_text('Usage: /subscribe_doc or /subscribe_dubai')
+        text = f'error: {ValueError}'
 
     await context.bot.send_message(chat_id=update.effective_chat.id,
-                                   text=f"Sottoscrizione effettuata, riceverai il menù del {update.message.text[10:]} ogni giorno alle 11:30\n"
-                                        f"Per cancellare la sottoscrizione scrivi /unsubscribe_{update.message.text[10:]}")
+                                   text=text)
 
 
 async def unsubscription_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -71,7 +81,6 @@ async def unknown(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 if __name__ == '__main__':
-
     with open("config.json", "r") as file:
         token = json.load(file)["token"]
     application = ApplicationBuilder().token(token).build()
@@ -86,5 +95,4 @@ if __name__ == '__main__':
     application.add_handler(MessageHandler(filters.COMMAND, unknown))
 
     application.run_polling(allowed_updates=Update.ALL_TYPES)
-    #https://github.com/python-telegram-bot/ptbcontrib/tree/main/ptbcontrib/ptb_jobstores persistent queue
-
+    # https://github.com/python-telegram-bot/ptbcontrib/tree/main/ptbcontrib/ptb_jobstores persistent queue
