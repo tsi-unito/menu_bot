@@ -83,12 +83,12 @@ async def unknown(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 if __name__ == '__main__':
-    DB_URI = "mongodb://root:password@localhost:27017/admin?retryWrites=true&w=majority"
-
-
     with open("config.json", "r") as file:
-        token = json.load(file)["token"]
-    application = ApplicationBuilder().token(token).build()
+        config = json.load(file)
+
+    DB_URI = f"mongodb://{config['dbuser']}:{config['dbpassword']}@{config['dburl']}:{config['dbport']}/admin?retryWrites=true&w=majority"
+
+    application = ApplicationBuilder().token(config['token']).build()
 
     application.job_queue.scheduler.add_jobstore(
         PTBMongoDBJobStore(
