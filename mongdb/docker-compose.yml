@@ -5,6 +5,7 @@ services:
 
   mongo:
     image: mongo
+    container_name: mongo_dev
     restart: always
     ports:
       - 27017:27017
