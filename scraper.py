@@ -24,12 +24,17 @@ def download_menu(resturant):
 
 def get_menu(resturant):
     #check if menu is updated as of today
-    with open(f"menu_{resturant}.json", "r") as f:
-        menu = json.load(f)
-    if not is_date_today(datetime.datetime.strptime(menu['time'], "%Y-%m-%d %H:%M:%S")):
-        download_menu(resturant)
+    try:
         with open(f"menu_{resturant}.json", "r") as f:
             menu = json.load(f)
+        if not is_date_today(datetime.datetime.strptime(menu['time'], "%Y-%m-%d %H:%M:%S")):
+            download_menu(resturant)
+    except FileNotFoundError:
+        download_menu(resturant)
+
+
+    with open(f"menu_{resturant}.json", "r") as f:
+        menu = json.load(f)
 
     return menu
 def is_menu(post,resturant): # questa è una porcata, ci deve essere modo più furbo di capire se è un nuovo menù
