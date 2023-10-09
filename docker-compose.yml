@@ -3,7 +3,7 @@ version: '3.2'
 services:
 
   mongo:
-    image: mongo
+    image: alvarovalde/aarch64-mongodb
     container_name: mongo
     restart: always
     environment:
