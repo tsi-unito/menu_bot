@@ -19,7 +19,7 @@ def download_menu(resturant):
     tries = 0
     while not download_succeeded and tries < 5:
         try:
-            posts = facebook_scraper.get_posts(account, pages=1, cookies="cookies.json")
+            posts = facebook_scraper.get_posts(account, pages=1, credentials=("", ""))
             download_succeeded = True
         except Exception as e:
             print(f"could not download menu: {e}")
