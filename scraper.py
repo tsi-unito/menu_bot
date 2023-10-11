@@ -1,4 +1,6 @@
 import json
+import time
+
 import facebook_scraper
 import datetime
 
@@ -13,7 +15,17 @@ def download_menu(resturant):
         print("Error: resturant not found")
         return
 
-    posts = facebook_scraper.get_posts(account, pages=1, cookies="cookies.json")
+    download_succeeded = False
+    tries = 0
+    while not download_succeeded and tries < 5:
+        try:
+            posts = facebook_scraper.get_posts(account, pages=1, cookies="cookies.json")
+            download_succeeded = True
+        except Exception as e:
+            print(f"could not download menu: {e}")
+            print("retrying...")
+            tries += 1
+            time.sleep(1)
 
     post = next(posts)
     while not is_menu(post, resturant) or not is_date_today(post['time']):
