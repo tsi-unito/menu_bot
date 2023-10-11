@@ -3,14 +3,14 @@ version: '3.2'
 services:
 
   mongo:
-    image: alvarovalde/aarch64-mongodb
+    image: mongo
     container_name: mongo
     restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: password
     volumes:
       - mongo_volume:/data/db
-  #questa immagine di mongo non ha utenti, bisogna crearlo (poi viene salvato nel db quindi finche non si elimina il volume l'utente rimane.
-  #docker exec -it mongo /bin/bash; mongo; use admin;
-  #db.runCommand( { createUser: "root", pwd: "password",roles: [{ role: "readWrite", db: "apscheduler" }]})
 
   menu_scraper_bot:
     build: .

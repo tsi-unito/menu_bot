@@ -6,6 +6,7 @@ import json
 from telegram import Update
 from telegram.ext import ApplicationBuilder, ContextTypes, CommandHandler, MessageHandler, filters
 from ptbcontrib.ptb_jobstores.mongodb import PTBMongoDBJobStore
+import os
 
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
@@ -83,10 +84,10 @@ async def unknown(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 if __name__ == '__main__':
-    with open("config.json", "r") as file:
+    with open(os.getenv("SECRETS"), "r") as file:
         config = json.load(file)
 
-    DB_URI = f"mongodb://{config['dbuser']}:{config['dbpassword']}@{config['dburl']}:{config['dbport']}/admin?retryWrites=true&w=majority"
+    DB_URI = f"mongodb://{os.getenv('MONGO_USERNAME')}:{os.getenv('MONGO_PASSWORD')}@{os.getenv('MONGO_HOST')}:{os.getenv('MONGO_PORT')}/admin?retryWrites=true&w=majority"
     #TODO: use environment variables instead of config.json
 
     application = ApplicationBuilder().token(config['token']).build()

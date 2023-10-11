@@ -1,11 +1,14 @@
 import json
 import time
-
+import os
 import facebook_scraper
 import datetime
 
 
 def download_menu(resturant):
+    with open(os.getenv("SECRETS"), "r") as file:
+        config = json.load(file)
+
     account = ""
     if resturant == "dubai":
         account = "100087591040668"
@@ -19,7 +22,7 @@ def download_menu(resturant):
     tries = 0
     while not download_succeeded and tries < 5:
         try:
-            posts = facebook_scraper.get_posts(account, pages=1, credentials=("", ""))
+            posts = facebook_scraper.get_posts(account, pages=1, credentials=(config["username"], config["password"]))
             download_succeeded = True
         except Exception as e:
             print(f"could not download menu: {e}")
