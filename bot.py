@@ -74,7 +74,7 @@ async def subscription_command(update: Update, context: ContextTypes.DEFAULT_TYP
 
 async def unsubscription_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id = update.effective_message.chat_id
-    job_removed = remove_job_if_exists(f"{chat_id}_{update.message.text[13:]}", context)
+    remove_job_if_exists(f"{chat_id}_{update.message.text[13:]}", context)
     await context.bot.send_message(chat_id=update.effective_chat.id,
                                    text=f"Sottoscrizione cancellata, non riceverai più il menù del {update.message.text[13:]}\n")
 
@@ -88,8 +88,6 @@ if __name__ == '__main__':
         config = json.load(file)
 
     DB_URI = f"mongodb://{os.getenv('MONGO_USERNAME')}:{os.getenv('MONGO_PASSWORD')}@{os.getenv('MONGO_HOST')}:{os.getenv('MONGO_PORT')}/admin?retryWrites=true&w=majority"
-    #TODO: use environment variables instead of config.json
-
     application = ApplicationBuilder().token(config['token']).build()
 
     application.job_queue.scheduler.add_jobstore(
@@ -112,5 +110,3 @@ if __name__ == '__main__':
     application.add_handler(MessageHandler(filters.COMMAND, unknown))
 
     application.run_polling(allowed_updates=Update.ALL_TYPES)
-    # https://github.com/python-telegram-bot/ptbcontrib/tree/main/ptbcontrib/ptb_jobstores persistent queue
-
