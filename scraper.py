@@ -51,6 +51,7 @@ def get_menu(resturant):
     with open(f"menu_{resturant}.json", "r") as f:
         menu = json.load(f)
 
+    menu["text"] = f"<u><i>Menù del {resturant}:</i></u>\n\n" + menu["text"]
     return menu
 def is_menu(post,resturant): # questa è una porcata, ci deve essere modo più furbo di capire se è un nuovo menù
     if resturant == "dubai":
@@ -64,5 +65,6 @@ def is_date_today(date):
 
 
 if __name__ == '__main__':
+    os.environ["SECRETS"] = "secrets.json"
     print(get_menu("doc"))
     print(get_menu("dubai"))

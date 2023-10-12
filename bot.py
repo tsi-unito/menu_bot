@@ -1,6 +1,8 @@
 import logging
 import datetime
 import pytz
+from telegram.constants import ParseMode
+
 import scraper
 import json
 from telegram import Update
@@ -34,7 +36,7 @@ async def menu_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
                                        text="Oggi il ristorante è chiuso")
     else:
         await context.bot.send_message(chat_id=update.effective_chat.id,
-                                       text=scraper.get_menu(f"{update.message.text[1:]}")["text"])
+                                       text=scraper.get_menu(f"{update.message.text[1:]}")["text"], parse_mode=ParseMode.HTML)
 
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -46,7 +48,7 @@ async def menu_command_callback(context: ContextTypes.DEFAULT_TYPE):
     print(f"job: {context.job.name}")
     job = context.job
     await context.bot.send_message(chat_id=job.chat_id,
-                                   text=scraper.get_menu(f"{job.data}")["text"])
+                                   text=scraper.get_menu(f"{job.data}")["text"], parse_mode=ParseMode.HTML)
 
 
 async def subscription_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
