@@ -59,8 +59,8 @@ async def menu_command_callback(context: ContextTypes.DEFAULT_TYPE):
 
 async def subscription_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id = update.effective_message.chat_id
-    text = (f"Sottoscrizione effettuata, riceverai il menù del {update.message.text[10:]} ogni giorno alle 11:30\n Per "
-            f"cancellare la sottoscrizione scrivi /unsubscribe_{update.message.text[10:]}")
+    text = (f"Sottoscrizione effettuata, riceverai il menù del {update.message.text[11:]} ogni giorno alle 11:30\n Per "
+            f"cancellare la sottoscrizione scrivi /unsubscribe_{update.message.text[11:]}")
     try:
         if context.job_queue.get_jobs_by_name(f"{chat_id}_{update.message.text[11:]}"):
             text = f"Sei già sottoscritto al menù del {update.message.text[11:]}"
