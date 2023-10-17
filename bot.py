@@ -87,7 +87,7 @@ async def unknown(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 if __name__ == '__main__':
     if os.getenv("SECRETS") is None:
-        os.environ["SECRETS"] = "config.json"
+        os.environ["SECRETS"] = "secrets.json"
 
     with open(os.getenv("SECRETS"), "r") as file:
         config = json.load(file)
