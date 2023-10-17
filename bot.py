@@ -41,7 +41,11 @@ async def menu_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await context.bot.send_message(chat_id=update.effective_chat.id,
-                                   text="Bot in fase di costruzione e testing, please be patient\n")
+                                   parse_mode=ParseMode.HTML,
+                                   text="<i>Benvenuto nel bot del ristorante Doc&Dubai</i>\n\nPuoi richiedere i menu "
+                                        "dei due ristoranti usando rispettivamente /doc e /dubai\n\n"
+                                   "Per sottoscriverti al menù giornaliero usa /subscribe_doc o /subscribe_dubai "
+                                        ", riceverai il menù alle 11:30 ogni giorno\n")
 
 
 async def menu_command_callback(context: ContextTypes.DEFAULT_TYPE):
@@ -109,6 +113,7 @@ if __name__ == '__main__':
         print(jobs.name)
 
     application.add_handler(CommandHandler('start', start))
+    application.add_handler(CommandHandler('help', start))
     application.add_handler(CommandHandler('dubai', menu_command))
     application.add_handler(CommandHandler('doc', menu_command))
     application.add_handler(CommandHandler('subscribe_doc', subscription_command))
