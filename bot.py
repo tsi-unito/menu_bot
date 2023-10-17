@@ -86,10 +86,16 @@ async def unknown(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 if __name__ == '__main__':
+    if os.getenv("SECRETS") is None:
+        os.environ["SECRETS"] = "config.json"
+
     with open(os.getenv("SECRETS"), "r") as file:
         config = json.load(file)
 
-    DB_URI = f"mongodb://{os.getenv('MONGO_USERNAME')}:{os.getenv('MONGO_PASSWORD')}@{os.getenv('MONGO_HOST')}:{os.getenv('MONGO_PORT')}/admin?retryWrites=true&w=majority"
+    if os.getenv("MONGO_USERNAME") is None:
+        DB_URI = f"mongodb://{config['MONGO_USERNAME']}:{config['MONGO_PASSWORD']}@{config['MONGO_HOST']}:{config['MONGO_PORT']}/admin?retryWrites=true&w=majority"
+    else:
+        DB_URI = f"mongodb://{os.getenv('MONGO_USERNAME')}:{os.getenv('MONGO_PASSWORD')}@{os.getenv('MONGO_HOST')}:{os.getenv('MONGO_PORT')}/admin?retryWrites=true&w=majority"
     application = ApplicationBuilder().token(config['token']).build()
 
     application.job_queue.scheduler.add_jobstore(
