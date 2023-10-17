@@ -1,11 +1,12 @@
 import logging
 import datetime
 import pytz
+import telegram
 from telegram.constants import ParseMode
 
 import scraper
 import json
-from telegram import Update
+from telegram import Update, BotCommand, Bot
 from telegram.ext import ApplicationBuilder, ContextTypes, CommandHandler, MessageHandler, filters
 from ptbcontrib.ptb_jobstores.mongodb import PTBMongoDBJobStore
 import os
@@ -45,7 +46,8 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
                                    text="<i>Benvenuto nel bot del ristorante Doc&Dubai</i>\n\nPuoi richiedere i menu "
                                         "dei due ristoranti usando rispettivamente /doc e /dubai\n\n"
                                    "Per sottoscriverti al menù giornaliero usa /subscribe_doc o /subscribe_dubai "
-                                        ", riceverai il menù alle 11:30 ogni giorno\n")
+                                        ", riceverai il menù alle 11:30 ogni giorno\n\n"
+                                        "/help per mostrare questo messaggio")
 
 
 async def menu_command_callback(context: ContextTypes.DEFAULT_TYPE):
@@ -88,6 +90,16 @@ async def unsubscription_command(update: Update, context: ContextTypes.DEFAULT_T
 async def unknown(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await context.bot.send_message(chat_id=update.effective_chat.id, text="comando sconosciuto")
 
+async def load_commands(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await context.bot.set_my_commands([
+        BotCommand("doc", "Stampa menù del giorno del doc"),
+        BotCommand("dubai", "Stampa menù del giorno del dubai"),
+        BotCommand("subscribe_doc","ricevi il menù del doc ogni giorno"),
+        BotCommand("subscribe_dubai","ricevi il menù del dubai ogni giorno"),
+        BotCommand("unsubscribe_doc","non ricevere il menù del doc ogni giorno"),
+        BotCommand("unsubscribe_dubai","non ricevere il menù del dubai ogni giorno"),
+        BotCommand("help","mostra messaggio di benvenuto")
+    ])
 
 if __name__ == '__main__':
     if os.getenv("SECRETS") is None:
@@ -120,6 +132,7 @@ if __name__ == '__main__':
     application.add_handler(CommandHandler('subscribe_dubai', subscription_command))
     application.add_handler(CommandHandler('unsubscribe_doc', unsubscription_command))
     application.add_handler(CommandHandler('unsubscribe_dubai', unsubscription_command))
+    application.add_handler(CommandHandler('set_commands', load_commands))
     application.add_handler(MessageHandler(filters.COMMAND, unknown))
 
     application.run_polling(allowed_updates=Update.ALL_TYPES)
