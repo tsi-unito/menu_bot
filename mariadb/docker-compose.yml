@@ -1,0 +1,22 @@
+version: "3.2"
+services:
+
+  mariadb-dev:
+    container_name: mariadb-dev
+    image: "mariadb"
+    ports:
+      - "3306:3306"
+    environment:
+      MARIADB_ROOT_PASSWORD: "root"
+      MARIADB_USER: bot
+      MARIADB_PASSWORD: bot
+      MARIADB_DATABASE: bot
+      TZ: Europe/Rome
+    restart: unless-stopped
+    volumes:
+      - type: volume
+        source: mariadb_volume
+        target: /data
+
+volumes:
+  mariadb_volume:

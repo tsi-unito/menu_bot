@@ -66,3 +66,4 @@ websockets==10.4
 wsproto==1.2.0
 zipp==3.17.0
 zstandard==0.21.0
+mariadb==1.1.8
