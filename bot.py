@@ -48,7 +48,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
                                    parse_mode=ParseMode.HTML,
                                    text="<i>Benvenuto nel bot del ristorante Doc&Dubai</i>\n\nPuoi richiedere i menu "
                                         "dei due ristoranti usando rispettivamente /doc e /dubai\n\n"
-                                        "Per sottoscriverti al menù giornaliero usa /subscribe_doc o /subscribe_dubai "
+                                        "Per iscriverti al menù giornaliero usa /subscribe_doc o /subscribe_dubai "
                                         ", riceverai il menù alle 11:30 ogni giorno\n\n"
                                         "/help per mostrare questo messaggio")
 
@@ -62,11 +62,11 @@ async def menu_command_callback(context: ContextTypes.DEFAULT_TYPE):
 
 async def subscription_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id = update.effective_message.chat_id
-    text = (f"Sottoscrizione effettuata, riceverai il menù del {update.message.text[11:]} ogni giorno alle 11:30\n Per "
-            f"cancellare la sottoscrizione scrivi /unsubscribe_{update.message.text[11:]}")
+    text = (f"Iscrizione effettuata, riceverai il menù del {update.message.text[11:]} ogni giorno alle 11:30\n Per "
+            f"cancellare l' iscrizione scrivi /unsubscribe_{update.message.text[11:]}")
     try:
         if context.job_queue.get_jobs_by_name(f"{chat_id}_{update.message.text[11:]}"):
-            text = f"Sei già sottoscritto al menù del {update.message.text[11:]}"
+            text = f"Sei già iscritto al menù del {update.message.text[11:]}"
 
         else:
             context.job_queue.run_daily(menu_command_callback, days=(1, 2, 3, 4, 5),
@@ -87,7 +87,7 @@ async def unsubscription_command(update: Update, context: ContextTypes.DEFAULT_T
     chat_id = update.effective_message.chat_id
     remove_job_if_exists(f"{chat_id}_{update.message.text[13:]}", context)
     await context.bot.send_message(chat_id=update.effective_chat.id,
-                                   text=f"Sottoscrizione cancellata, non riceverai più il menù del {update.message.text[13:]}\n")
+                                   text=f"Iscrizione cancellata, non riceverai più il menù del {update.message.text[13:]}\n")
 
 
 async def print_subscribers(update: Update, context: ContextTypes.DEFAULT_TYPE):
