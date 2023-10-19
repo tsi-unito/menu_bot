@@ -11,6 +11,8 @@ from telegram.ext import ApplicationBuilder, ContextTypes, CommandHandler, Messa
 from ptbcontrib.ptb_jobstores.mongodb import PTBMongoDBJobStore
 import os
 
+global jobstore
+
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     level=logging.INFO
@@ -37,7 +39,8 @@ async def menu_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
                                        text="Oggi il ristorante è chiuso")
     else:
         await context.bot.send_message(chat_id=update.effective_chat.id,
-                                       text=scraper.get_menu(f"{update.message.text[1:]}")["text"], parse_mode=ParseMode.HTML)
+                                       text=scraper.get_menu(f"{update.message.text[1:]}")["text"],
+                                       parse_mode=ParseMode.HTML)
 
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -45,7 +48,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
                                    parse_mode=ParseMode.HTML,
                                    text="<i>Benvenuto nel bot del ristorante Doc&Dubai</i>\n\nPuoi richiedere i menu "
                                         "dei due ristoranti usando rispettivamente /doc e /dubai\n\n"
-                                   "Per sottoscriverti al menù giornaliero usa /subscribe_doc o /subscribe_dubai "
+                                        "Per sottoscriverti al menù giornaliero usa /subscribe_doc o /subscribe_dubai "
                                         ", riceverai il menù alle 11:30 ogni giorno\n\n"
                                         "/help per mostrare questo messaggio")
 
@@ -87,19 +90,44 @@ async def unsubscription_command(update: Update, context: ContextTypes.DEFAULT_T
                                    text=f"Sottoscrizione cancellata, non riceverai più il menù del {update.message.text[13:]}\n")
 
 
+async def print_subscribers(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    joblist = []
+    dubai = 0
+    doc = 0
+    for job in jobstore.get_all_jobs():
+        jobname = job.name.split("_")
+        joblist.append((jobname[0], jobname[1]))
+        if jobname[1] == "dubai":
+            dubai += 1
+        else:
+            doc += 1
+
+    message = (f"subscribers:\n\n"
+               f"doc: {doc}\n"
+               f"dubai: {dubai}\n\n")
+    for job in joblist:
+        message += f"user {job[0]}, {job[1]}\n"
+
+    await context.bot.send_message(chat_id='532629429',
+                                   text=message)
+
+
+
 async def unknown(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await context.bot.send_message(chat_id=update.effective_chat.id, text="comando sconosciuto")
+
 
 async def load_commands(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await context.bot.set_my_commands([
         BotCommand("doc", "Stampa menù del giorno del doc"),
         BotCommand("dubai", "Stampa menù del giorno del dubai"),
-        BotCommand("subscribe_doc","ricevi il menù del doc ogni giorno"),
-        BotCommand("subscribe_dubai","ricevi il menù del dubai ogni giorno"),
-        BotCommand("unsubscribe_doc","non ricevere il menù del doc ogni giorno"),
-        BotCommand("unsubscribe_dubai","non ricevere il menù del dubai ogni giorno"),
-        BotCommand("help","mostra messaggio di benvenuto")
+        BotCommand("subscribe_doc", "ricevi il menù del doc ogni giorno"),
+        BotCommand("subscribe_dubai", "ricevi il menù del dubai ogni giorno"),
+        BotCommand("unsubscribe_doc", "non ricevere il menù del doc ogni giorno"),
+        BotCommand("unsubscribe_dubai", "non ricevere il menù del dubai ogni giorno"),
+        BotCommand("help", "mostra messaggio di benvenuto")
     ])
+
 
 if __name__ == '__main__':
     if os.getenv("SECRETS") is None:
@@ -114,15 +142,11 @@ if __name__ == '__main__':
         DB_URI = f"mongodb://{os.getenv('MONGO_USERNAME')}:{os.getenv('MONGO_PASSWORD')}@{os.getenv('MONGO_HOST')}:{os.getenv('MONGO_PORT')}/admin?retryWrites=true&w=majority"
     application = ApplicationBuilder().token(config['token']).build()
 
-    application.job_queue.scheduler.add_jobstore(
-        PTBMongoDBJobStore(
-            application=application,
-            host=DB_URI,
-        )
+    jobstore = PTBMongoDBJobStore(
+        application=application,
+        host=DB_URI,
     )
-
-    for jobs in application.job_queue.jobs():
-        print(jobs.name)
+    application.job_queue.scheduler.add_jobstore(jobstore)
 
     application.add_handler(CommandHandler('start', start))
     application.add_handler(CommandHandler('help', start))
@@ -132,6 +156,7 @@ if __name__ == '__main__':
     application.add_handler(CommandHandler('subscribe_dubai', subscription_command))
     application.add_handler(CommandHandler('unsubscribe_doc', unsubscription_command))
     application.add_handler(CommandHandler('unsubscribe_dubai', unsubscription_command))
+    application.add_handler(CommandHandler('subscribers', print_subscribers))
     application.add_handler(CommandHandler('set_commands', load_commands))
     application.add_handler(MessageHandler(filters.COMMAND, unknown))
 
