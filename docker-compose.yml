@@ -22,10 +22,11 @@ services:
   menu_scraper_bot:
     build: .
     container_name: menu_scraper_bot
-    #restart: unless-stopped
+    restart: unless-stopped
     depends_on:
       - mariadb
     environment:
+      DOCKER: "True"
       SECRETS: /run/secrets/secrets
     secrets:
       - secrets
