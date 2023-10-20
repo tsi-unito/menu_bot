@@ -189,6 +189,9 @@ if __name__ == '__main__':
     with open(os.getenv("SECRETS"), "r") as file:
         config = json.load(file)
 
+    if os.getenv("DOCKER") is None:
+        config["db_host"]="localhost"
+
     application = ApplicationBuilder().token(config['token']).build()
 
     application.job_queue.run_daily(download_menus, days=(1, 2, 3, 4, 5),
@@ -203,10 +206,10 @@ if __name__ == '__main__':
     # https://docs.sqlalchemy.org/en/20/core/engines.html#creating-urls-programmatically
     engine = create_engine(sqlalchemy.URL.create(
         "mysql+pymysql",
-        username="bot",
-        password="bot",
-        host="localhost",
-        database="bot"
+        username= config["db_username"],
+        password= config["db_password"],
+        host= config["db_host"],
+        database= config["database"],
     ))
 
     Base.metadata.create_all(engine)
