@@ -2,27 +2,31 @@ version: '3.2'
 
 services:
 
-  mongo:
-    image: alvarovalde/aarch64-mongodb
-    container_name: mongo
-    restart: always
+  mariadb:
+    container_name: mariadb
+    image: "mariadb"
+    ports:
+      - "3306:3306"
+    environment:
+      MARIADB_ROOT_PASSWORD: "root"
+      MARIADB_USER: bot
+      MARIADB_PASSWORD: bot
+      MARIADB_DATABASE: bot
+      TZ: Europe/Rome
+    restart: unless-stopped
     volumes:
-      - mongo_volume:/data/db
-  #questa immagine di mongo non ha utenti, bisogna crearlo (poi viene salvato nel db quindi finche non si elimina il volume l'utente rimane.
-  #docker exec -it mongo /bin/bash; mongo; use admin;
-  #db.runCommand( { createUser: "root", pwd: "password",roles: [{ role: "readWrite", db: "apscheduler" }]})
+      - type: volume
+        source: mariadb_volume
+        target: /data
 
   menu_scraper_bot:
     build: .
     container_name: menu_scraper_bot
-    restart: always
+    restart: unless-stopped
     depends_on:
-      - mongo
+      - mariadb
     environment:
-      MONGO_USERNAME: root
-      MONGO_PASSWORD: password
-      MONGO_HOST: mongo
-      MONGO_PORT: 27017
+      DOCKER: "True"
       SECRETS: /run/secrets/secrets
     secrets:
       - secrets
@@ -32,7 +36,7 @@ secrets:
         file: ./secrets.json
 
 volumes:
-  mongo_volume:
+  mariadb_volume:
 
 
 
