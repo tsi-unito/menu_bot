@@ -141,10 +141,8 @@ async def download_menus(context: ContextTypes.DEFAULT_TYPE):
 
 
 async def send_menus(context: ContextTypes.DEFAULT_TYPE):
-    with open("menu_doc.json", "r") as f:
-        menu_doc = json.load(f)
-    with open("menu_dubai.json", "r") as f:
-        menu_dubai = json.load(f)
+    menu_doc = scraper.get_menu("doc")
+    menu_dubai = scraper.get_menu("dubai")
 
     global engine
     with Session(engine) as session:
@@ -194,12 +192,12 @@ if __name__ == '__main__':
     application = ApplicationBuilder().token(config['token']).build()
 
     application.job_queue.run_daily(download_menus, days=(1, 2, 3, 4, 5),
-                                    time=datetime.time(hour=13, minute=58, second=00,
+                                    time=datetime.time(hour=11, minute=30, second=00,
                                                        tzinfo=pytz.timezone('Europe/Rome')))
     # Due to a bug Job_queue is skipping job if timezone is not provided for job.run_daily.
 
     application.job_queue.run_daily(send_menus, days=(1, 2, 3, 4, 5),
-                                    time=datetime.time(hour=13, minute=59, second=00,
+                                    time=datetime.time(hour=10, minute=00, second=00,
                                                        tzinfo=pytz.timezone('Europe/Rome')))
 
     # https://docs.sqlalchemy.org/en/20/core/engines.html#creating-urls-programmatically
