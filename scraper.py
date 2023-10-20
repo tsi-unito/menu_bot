@@ -6,6 +6,9 @@ import datetime
 
 
 def download_menu(resturant):
+    if os.getenv("SECRETS") is None:
+        os.environ["SECRETS"] = "secrets.json"
+
     with open(os.getenv("SECRETS"), "r") as file:
         config = json.load(file)
 
@@ -25,7 +28,7 @@ def download_menu(resturant):
             posts = facebook_scraper.get_posts(account, pages=1, credentials=(config["username"], config["password"]))
             download_succeeded = True
         except Exception as e:
-            print(f"could not download menu: {e}")
+            print(f"could not download menu, error:\n{e}")
             print("retrying...")
             tries += 1
             time.sleep(1)
