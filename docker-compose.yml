@@ -17,7 +17,7 @@ services:
     volumes:
       - type: volume
         source: mariadb_volume
-        target: /data
+        target: /var/lib/mysql
 
   menu_scraper_bot:
     build: .
