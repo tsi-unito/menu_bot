@@ -188,6 +188,7 @@ async def load_commands(update: Update, context: ContextTypes.DEFAULT_TYPE):
         BotCommand("stop_dubai", "non ricevere il menù del dubai ogni giorno"),
         BotCommand("help", "mostra messaggio di aiuto")
     ])
+    await context.bot.send_message(chat_id=update.effective_chat.id, text="comandi aggiornati")
 
 async def send_menus_wrapper(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if update.effective_user.id == 532629429:
