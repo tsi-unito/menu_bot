@@ -49,7 +49,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
                                    parse_mode=ParseMode.HTML,
                                    text="<i>Benvenuto nel bot del ristorante Doc&Dubai</i>\n\nPuoi richiedere i menu "
                                         "dei due ristoranti usando rispettivamente /doc e /dubai\n\n"
-                                        "Per iscriverti al menù giornaliero usa /subscribe_doc o /subscribe_dubai "
+                                        "Per iscriverti al menù giornaliero usa /start_doc o /start_dubai "
                                         ", riceverai il menù alle 11:30 ogni giorno\n\n"
                                         "/help per mostrare questo messaggio")
 
@@ -59,7 +59,7 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
                                    parse_mode=ParseMode.HTML,
                                    text="<i>Benvenuto nel bot del ristorante Doc&Dubai</i>\n\nPuoi richiedere i menu "
                                         "dei due ristoranti usando rispettivamente /doc e /dubai\n\n"
-                                        "Per iscriverti al menù giornaliero usa /subscribe_doc o /subscribe_dubai "
+                                        "Per iscriverti al menù giornaliero usa /start_doc o /start_dubai "
                                         ", riceverai il menù alle 11:30 ogni giorno\n\n"
                                         "/help per mostrare questo messaggio")
 
@@ -74,18 +74,18 @@ async def menu_command_callback(context: ContextTypes.DEFAULT_TYPE):
 async def subscription_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id = update.effective_message.chat_id
     text = (f"Iscrizione effettuata, riceverai il menù del {update.message.text.split('_')[1]} ogni giorno alle 11:30\n Per "
-            f"cancellare l' iscrizione scrivi /unsubscribe_{update.message.text.split('_')[1]}")
+            f"cancellare l' iscrizione scrivi /stop_{update.message.text.split('_')[1]}")
     add_user(chat_id)
     global engine
     with Session(engine) as session:
         user = session.query(BotUser).filter(BotUser.uid == chat_id).first()
         if update.message.text.split('_')[1] == "doc":
             if user.doc:
-                text = f"Sei già iscritto al menù del doc, per cancellare l' iscrizione scrivi /unsubscribe_doc"
+                text = f"Sei già iscritto al menù del doc, per cancellare l' iscrizione scrivi /stop_doc"
             user.doc = True
         elif update.message.text.split('_')[1] == "dubai":
             if user.dubai:
-                text = f"Sei già iscritto al menù del dubai, per cancellare l' iscrizione scrivi /unsubscribe_dubai"
+                text = f"Sei già iscritto al menù del dubai, per cancellare l' iscrizione scrivi /stop_dubai"
             user.dubai = True
         session.commit()
 
