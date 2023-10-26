@@ -145,10 +145,18 @@ async def send_menus(context: ContextTypes.DEFAULT_TYPE):
     menu_dubai = scraper.get_menu("dubai")
 
     global engine
-    with Session(engine) as session:
-        users = session.query(BotUser).all()
-        doc = [user.uid for user in users if user.doc]
-        dubai = [user.uid for user in users if user.dubai]
+    retry = 0
+    database_get_succeded = False
+    while not database_get_succeded and retry < 3:
+        try:
+            with Session(engine) as session:
+                users = session.query(BotUser).all()
+                doc = [user.uid for user in users if user.doc]
+                dubai = [user.uid for user in users if user.dubai]
+                database_get_succeded = True
+        except Exception as e:
+            print(f"error while getting users: {e}")
+            retry = retry + 1
 
     for uid in doc:
         await context.bot.send_message(chat_id=uid, text=menu_doc["text"], parse_mode=ParseMode.HTML)
@@ -181,6 +189,9 @@ async def load_commands(update: Update, context: ContextTypes.DEFAULT_TYPE):
         BotCommand("help", "mostra messaggio di aiuto")
     ])
 
+async def send_menus_wrapper(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if update.effective_user.id == 532629429:
+        await send_menus(context)
 
 if __name__ == '__main__':
     if os.getenv("SECRETS") is None:
@@ -218,6 +229,7 @@ if __name__ == '__main__':
     application.add_handler(CommandHandler('help', help_command))
     application.add_handler(CommandHandler('dubai', menu_command))
     application.add_handler(CommandHandler('doc', menu_command))
+    application.add_handler(CommandHandler('send', send_menus_wrapper))
     application.add_handler(CommandHandler('subscribe_doc', subscription_command))
     application.add_handler(CommandHandler('subscribe_dubai', subscription_command))
     application.add_handler(CommandHandler('unsubscribe_doc', unsubscription_command))
