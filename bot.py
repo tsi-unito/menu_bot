@@ -193,6 +193,22 @@ async def send_menus_wrapper(update: Update, context: ContextTypes.DEFAULT_TYPE)
     if update.effective_user.id == 532629429:
         await send_menus(context)
 
+async def announce(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    global engine
+    retry = 0
+    database_get_succeded = False
+    while not database_get_succeded and retry < 3:
+        try:
+            with Session(engine) as session:
+                users = session.query(BotUser).all()
+                database_get_succeded = True
+        except Exception as e:
+            print(f"error while getting users: {e}")
+            retry = retry + 1
+
+    for user in users:
+        await context.bot.send_message(chat_id=user.uid, text="ANNUNCIO: " + update.message.text[10:])
+
 if __name__ == '__main__':
     if os.getenv("SECRETS") is None:
         os.environ["SECRETS"] = "secrets.json"
@@ -230,6 +246,7 @@ if __name__ == '__main__':
     application.add_handler(CommandHandler('dubai', menu_command))
     application.add_handler(CommandHandler('doc', menu_command))
     application.add_handler(CommandHandler('send', send_menus_wrapper))
+    application.add_handler(CommandHandler('announce', announce))
     application.add_handler(CommandHandler('subscribe_doc', subscription_command))
     application.add_handler(CommandHandler('subscribe_dubai', subscription_command))
     application.add_handler(CommandHandler('unsubscribe_doc', unsubscription_command))
