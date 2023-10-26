@@ -145,7 +145,7 @@ def format_doc(menu):
     menu = lowercase_menu(menu)
     menu = menu + "\n\nVI ASPETTIAMO!"
     menu = menu.replace("inasalata", "insalata")
-    menu= "<i><b><a href='https://www.facebook.com/selfservicedoctorino'>Menù del Dubai 📋</a></b></i>\n\n" + menu
+    menu= "<i><b><a href='https://www.facebook.com/selfservicedoctorino'>Menù del DOC 📝</a></b></i>\n\n" + menu
 
     return menu
 
