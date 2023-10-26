@@ -128,7 +128,8 @@ async def print_subscribers(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     message = (f"subscribers:\n\n"
                f"doc: {len(doc)}\n"
-               f"dubai: {len(dubai)}\n\n")
+               f"dubai: {len(dubai)}\n"
+               f"total: {len(users)}\n\n")
 
     for user in users:
         message += f"{user.uid}: {'Doc' if user.doc else ''} {'Dubai' if user.dubai else ''}\n"
