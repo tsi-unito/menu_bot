@@ -118,6 +118,8 @@ async def unknown(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 async def print_subscribers(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if update.effective_user.id != 532629429:
+        return
 
     with Session(engine) as session:
         users = session.query(BotUser).all()
@@ -126,12 +128,13 @@ async def print_subscribers(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     message = (f"subscribers:\n\n"
                f"doc: {len(doc)}\n"
-               f"dubai: {len(dubai)}\n\n")
+               f"dubai: {len(dubai)}\n"
+               f"total: {len(users)}\n\n")
 
     for user in users:
         message += f"{user.uid}: {'Doc' if user.doc else ''} {'Dubai' if user.dubai else ''}\n"
 
-    await context.bot.send_message(chat_id='532629429',
+    await context.bot.send_message(chat_id=update.effective_chat.id,
                                    text=message)
 
 
