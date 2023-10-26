@@ -61,7 +61,6 @@ def get_menu(resturant):
     with open(f"menu_{resturant}.json", "r") as f:
         menu = json.load(f)
 
-    menu["text"] = f"<u><i>Menù del {resturant}:</i></u>\n\n" + menu["text"]
     return menu
 
 
@@ -92,7 +91,7 @@ def format_dubai(menu):
 
     menu = menu + "\n\nVI ASPETTIAMO!"
 
-    menu = "\tMENÙ DUBAI 📋\n\n" + menu
+    menu= "<u><i>Menù del Dubai 📋</i></u>\n\n" + menu
     return menu
 
 
@@ -146,7 +145,7 @@ def format_doc(menu):
     menu = lowercase_menu(menu)
     menu = menu + "\n\nVI ASPETTIAMO!"
     menu = menu.replace("inasalata", "insalata")
-    menu = "MENÙ DOC 📝\n" + menu
+    menu= "<u><i>Menù del Doc 📋</i></u>\n" + menu
 
     return menu
 
