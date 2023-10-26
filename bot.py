@@ -8,7 +8,7 @@ from telegram.constants import ParseMode
 
 import scraper
 import json
-from telegram import Update, BotCommand, Bot
+from telegram import Update, BotCommand, Bot, ReplyKeyboardMarkup, KeyboardButton
 from telegram.ext import ApplicationBuilder, ContextTypes, CommandHandler, MessageHandler, filters
 import os
 from sql_alchemy.database_connect import BotUser, Base
@@ -31,6 +31,19 @@ def add_user(uid: int):
             session.add(BotUser(uid=uid))
             session.commit()
 
+
+def grid():
+    keyboard = [
+        [KeyboardButton('Start Dubai'), KeyboardButton('Stop Dubai')],
+        [KeyboardButton('Start Doc'), KeyboardButton('Stop Doc')],
+        [KeyboardButton('Stop'), KeyboardButton('HELP')],
+        [KeyboardButton('Autori'), KeyboardButton('FAQ')]
+    ]
+
+    reply_markup = ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
+
+    return reply_markup
+
 async def menu_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if datetime.datetime.today().weekday() == 5 or datetime.datetime.today().weekday() == 6:
         await context.bot.send_message(chat_id=update.effective_chat.id,
@@ -45,13 +58,25 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     # db_connector.add_user(update.effective_user.id)
     add_user(update.effective_user.id)
 
-    await context.bot.send_message(chat_id=update.effective_chat.id,
-                                   parse_mode=ParseMode.HTML,
-                                   text="<i>Benvenuto nel bot del ristorante Doc&Dubai</i>\n\nPuoi richiedere i menu "
-                                        "dei due ristoranti usando rispettivamente /doc e /dubai\n\n"
-                                        "Per iscriverti al menù giornaliero usa /subscribe_doc o /subscribe_dubai "
-                                        ", riceverai il menù alle 11:30 ogni giorno\n\n"
-                                        "/help per mostrare questo messaggio")
+    if update.effective_chat.id > 0:
+        keyboard = grid()
+
+        await context.bot.send_message(chat_id=update.effective_chat.id,
+                                       reply_markup=keyboard,
+                                       parse_mode=ParseMode.HTML,
+                                       text="<i>Benvenuto nel bot del ristorante Doc&Dubai</i>\n\nPuoi richiedere i menu "
+                                            "dei due ristoranti usando rispettivamente /doc e /dubai\n\n"
+                                            "Per iscriverti al menù giornaliero usa /subscribe_doc o /subscribe_dubai "
+                                            ", riceverai il menù alle 11:30 ogni giorno\n\n"
+                                            "/help per mostrare questo messaggio")
+    else:
+        await context.bot.send_message(chat_id=update.effective_chat.id,
+                                       parse_mode=ParseMode.HTML,
+                                       text="<i>Benvenuto nel bot del ristorante Doc&Dubai</i>\n\nPuoi richiedere i menu "
+                                            "dei due ristoranti usando rispettivamente /doc e /dubai\n\n"
+                                            "Per iscriverti al menù giornaliero usa /subscribe_doc o /subscribe_dubai "
+                                            ", riceverai il menù alle 11:30 ogni giorno\n\n"
+                                            "/help per mostrare questo messaggio")
 
 
 async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -114,7 +139,23 @@ async def unsubscription_command(update: Update, context: ContextTypes.DEFAULT_T
 
 
 async def unknown(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await context.bot.send_message(chat_id=update.effective_chat.id, text="comando sconosciuto")
+    text = update.message.text.lower()
+
+    if text == 'start dubai' or text == 'start doc':
+        await menu_command(update, context)
+    elif text == 'stop dubai' or text == 'stop doc':
+        await unsubscription_command(update, context)
+    elif text == 'help':
+        await help_command(update, context)
+    #elif text == 'autori':
+        #comando autori
+    #elif text == 'stop':
+        #comando stop
+    #elif text == 'faq':
+        #comando FAQ
+    else:
+        keyboard = grid()
+        await context.bot.send_message(chat_id=update.effective_chat.id, reply_markup=keyboard, text="Questo comando non esiste. Usa la tastiera personalizzata per aiutarti!")
 
 
 async def print_subscribers(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -212,8 +253,10 @@ async def announce(update: Update, context: ContextTypes.DEFAULT_TYPE):
             print(f"error while getting users: {e}")
             retry = retry + 1
 
+    keyboard = grid()
+
     for user in users:
-        await context.bot.send_message(chat_id=user.uid, text="ANNUNCIO: " + update.message.text[10:])
+        await context.bot.send_message(chat_id=user.uid, reply_markup=keyboard, text="⚠️<b>ANNUNCIO</b>⚠️\n " + update.message.text[10:])
 
 if __name__ == '__main__':
     if os.getenv("SECRETS") is None:
