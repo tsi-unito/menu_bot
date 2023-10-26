@@ -194,6 +194,9 @@ async def send_menus_wrapper(update: Update, context: ContextTypes.DEFAULT_TYPE)
         await send_menus(context)
 
 async def announce(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if not update.effective_user.id == 532629429:
+        return
+
     global engine
     retry = 0
     database_get_succeded = False
