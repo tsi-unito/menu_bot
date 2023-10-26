@@ -1,4 +1,5 @@
 import json
+import re
 import time
 import os
 import facebook_scraper
@@ -37,6 +38,11 @@ def download_menu(resturant):
     while not is_menu(post, resturant) or not is_date_today(post['time']):
         post = next(posts)
 
+    if resturant == "dubai":
+        post["text"] = format_dubai(post["text"])
+    elif resturant == "doc":
+        post["text"] = format_doc(post["text"])
+
     with open(f"menu_{resturant}.json", "w") as f:
         json.dump(post, f, indent=4, default=str)
 
@@ -66,6 +72,72 @@ def is_date_today(date):
     today = datetime.datetime.today()
     return today.day == date.day and today.month == date.month and today.year == date.year
 
+
+def format_dubai(menu):
+    menu = menu.replace("Oggi vi proponiamo:", "Buongiorno, oggi vi proponiamo: 🍽️")
+    menu = menu.replace("PRIMI", "\nPRIMI 🍝")
+    menu = menu.replace("SECONDI", "\nSECONDI 🍖")
+    menu = menu.replace("CONTORNI", "\nCONTORNI 🍟🥦")
+    menu = menu.replace("FRUTTA E YOGURT", "\nFRUTTA E YOGURT 🍎🍍🥛")
+    menu = menu.replace("DOLCI", "\nDOLCI 🍰")
+
+    menu = menu.replace(" -", "-")
+    menu = menu.replace("\n-", "-")
+    menu = menu.replace("-", "\n - ")
+
+    menu = menu + "\n\nVI ASPETTIAMO!"
+    return menu
+
+
+def lowercase_menu(menu):
+    # Dividi il testo in linee
+    lines = menu.split('\n')
+
+    # Elabora ogni linea
+    for i, line in enumerate(lines):
+        # Tratta titoli, introduzione e insalate
+        if line.startswith("PRIMI") or line.startswith("SECONDI") or line.startswith("CONTORNI") or line.startswith(
+                "PIATTI FREDDI") or line.startswith("INSALATE") or line.startswith("DOLCI") or line.startswith(
+            "FRUTTA") or line.startswith(" - INSALATA") or line.startswith("Buongiorno"):
+            # Mantieni maiuscole e minuscole originali
+            lines[i] = line
+        else:
+            # Trasforma il resto in minuscolo
+            lines[i] = line.lower()
+
+    # Ricompatta il testo
+    formatted_menu = '\n'.join(lines)
+
+    return formatted_menu
+
+
+def format_doc(menu):
+    date_pattern = r'\d{2}/\d{2}/\d{4}'
+
+    # Sostituisci tutte le occorrenze del pattern con un testo specifico (ad esempio, "DATA_RIMOSSA")
+    menu = re.sub(date_pattern, "", menu)
+    menu = menu.replace("\nPER PRENOTAZIONI CHIAMARE IL NUMERO.3385305973. Lucia \n", "\n")
+    menu = menu.replace("\n", "\n-")
+    menu = menu.replace("\n-\n", "\n")
+
+    menu = menu.replace("MENU DEL GIORNO", "Buongiorno, oggi vi proponiamo: 🍽")
+    menu = menu.replace("-PRIMI", "\nPRIMI 🍝")
+    menu = menu.replace("-SECONDO", "\nSECONDI 🍖")
+    menu = menu.replace("-CONTORNI", "\nCONTORNI 🍟🥦")
+    menu = menu.replace("-INSALATE:", "\nINSALATE 🥗")
+    menu = menu.replace("-DESSERT:", "\nDOLCI 🍰")
+    menu = menu.replace("-FRUTTA:", "\nFRUTTA 🍎🍍🥛")
+    menu = menu.replace("-PIATTI FREDDI:", "\nPIATTI FREDDI 🍱 ")
+
+    # Aggiungi uno spazio dopo i trattini
+    menu = menu.replace(" -", "-")
+    # menu = menu.replace("\n-", "\n-")
+    menu = menu.replace("-", " - ")
+
+    menu = lowercase_menu(menu)
+    menu = menu + "\n\nVI ASPETTIAMO!"
+    menu = menu.replace("inasalata", "insalata")
+    return menu
 
 if __name__ == '__main__':
     os.environ["SECRETS"] = "secrets.json"
