@@ -91,7 +91,7 @@ def format_dubai(menu):
 
     menu = menu + "\n\nVI ASPETTIAMO!"
 
-    menu= "<u><i>Menù del Dubai 📋</i></u>\n\n" + menu
+    menu= "<i><b><a href='https://www.facebook.com/people/Dubai-coffee-lounge/100087591040668/'>Menù del Dubai 📋</a></b></i>\n\n" + menu
     return menu
 
 
@@ -145,7 +145,7 @@ def format_doc(menu):
     menu = lowercase_menu(menu)
     menu = menu + "\n\nVI ASPETTIAMO!"
     menu = menu.replace("inasalata", "insalata")
-    menu= "<u><i>Menù del Doc 📋</i></u>\n" + menu
+    menu= "<i><b><a href='https://www.facebook.com/selfservicedoctorino'>Menù del Dubai 📋</a></b></i>\n\n" + menu
 
     return menu
 
