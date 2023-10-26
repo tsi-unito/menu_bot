@@ -73,17 +73,17 @@ async def menu_command_callback(context: ContextTypes.DEFAULT_TYPE):
 
 async def subscription_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id = update.effective_message.chat_id
-    text = (f"Iscrizione effettuata, riceverai il menù del {update.message.text[11:]} ogni giorno alle 11:30\n Per "
-            f"cancellare l' iscrizione scrivi /unsubscribe_{update.message.text[11:]}")
+    text = (f"Iscrizione effettuata, riceverai il menù del {update.message.text.split('_')[1]} ogni giorno alle 11:30\n Per "
+            f"cancellare l' iscrizione scrivi /unsubscribe_{update.message.text.split('_')[1]}")
     add_user(chat_id)
     global engine
     with Session(engine) as session:
         user = session.query(BotUser).filter(BotUser.uid == chat_id).first()
-        if update.message.text[11:] == "doc":
+        if update.message.text.split('_')[1] == "doc":
             if user.doc:
                 text = f"Sei già iscritto al menù del doc, per cancellare l' iscrizione scrivi /unsubscribe_doc"
             user.doc = True
-        elif update.message.text[11:] == "dubai":
+        elif update.message.text.split('_')[1] == "dubai":
             if user.dubai:
                 text = f"Sei già iscritto al menù del dubai, per cancellare l' iscrizione scrivi /unsubscribe_dubai"
             user.dubai = True
@@ -95,16 +95,16 @@ async def subscription_command(update: Update, context: ContextTypes.DEFAULT_TYP
 
 async def unsubscription_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id = update.effective_message.chat_id
-    text = f"Iscrizione cancellata, non riceverai più il menù del {update.message.text[13:]}\n"
+    text = f"Iscrizione cancellata, non riceverai più il menù del {update.message.text.split('_')[1]}\n"
     add_user(chat_id)
     global engine
     with Session(engine) as session:
         user = session.query(BotUser).filter(BotUser.uid == chat_id).first()
-        if update.message.text[13:] == "doc":
+        if update.message.text.split('_')[1] == "doc":
             if not user.doc:
                 text = f"Non sei iscritto al menù del doc"
             user.doc = False
-        elif update.message.text[13:] == "dubai":
+        elif update.message.text.split('_')[1] == "dubai":
             if not user.dubai:
                 text = f"Non sei iscritto al menù del dubai"
             user.dubai = False
@@ -182,10 +182,10 @@ async def load_commands(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await context.bot.set_my_commands([
         BotCommand("doc", "Stampa menù del giorno del doc"),
         BotCommand("dubai", "Stampa menù del giorno del dubai"),
-        BotCommand("subscribe_doc", "ricevi il menù del doc ogni giorno"),
-        BotCommand("subscribe_dubai", "ricevi il menù del dubai ogni giorno"),
-        BotCommand("unsubscribe_doc", "non ricevere il menù del doc ogni giorno"),
-        BotCommand("unsubscribe_dubai", "non ricevere il menù del dubai ogni giorno"),
+        BotCommand("start_doc", "ricevi il menù del doc ogni giorno"),
+        BotCommand("start_dubai", "ricevi il menù del dubai ogni giorno"),
+        BotCommand("stop_doc", "non ricevere il menù del doc ogni giorno"),
+        BotCommand("stop_dubai", "non ricevere il menù del dubai ogni giorno"),
         BotCommand("help", "mostra messaggio di aiuto")
     ])
 
@@ -250,10 +250,10 @@ if __name__ == '__main__':
     application.add_handler(CommandHandler('doc', menu_command))
     application.add_handler(CommandHandler('send', send_menus_wrapper))
     application.add_handler(CommandHandler('announce', announce))
-    application.add_handler(CommandHandler('subscribe_doc', subscription_command))
-    application.add_handler(CommandHandler('subscribe_dubai', subscription_command))
-    application.add_handler(CommandHandler('unsubscribe_doc', unsubscription_command))
-    application.add_handler(CommandHandler('unsubscribe_dubai', unsubscription_command))
+    application.add_handler(CommandHandler('start_doc', subscription_command))
+    application.add_handler(CommandHandler('start_dubai', subscription_command))
+    application.add_handler(CommandHandler('stop_doc', unsubscription_command))
+    application.add_handler(CommandHandler('stop_dubai', unsubscription_command))
     application.add_handler(CommandHandler('subscribers', print_subscribers))
     application.add_handler(CommandHandler('set_commands', load_commands))
     application.add_handler(MessageHandler(filters.COMMAND, unknown))
