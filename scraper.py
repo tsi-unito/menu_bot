@@ -46,6 +46,7 @@ def download_menu(resturant):
     with open(f"menu_{resturant}.json", "w") as f:
         json.dump(post, f, indent=4, default=str)
 
+
 def get_menu(resturant):
     #check if menu is updated as of today
     try:
@@ -62,11 +63,14 @@ def get_menu(resturant):
 
     menu["text"] = f"<u><i>Menù del {resturant}:</i></u>\n\n" + menu["text"]
     return menu
+
+
 def is_menu(post,resturant): # questa è una porcata, ci deve essere modo più furbo di capire se è un nuovo menù
     if resturant == "dubai":
         return "Oggi vi proponiamo" in post["text"]
     else:
         return "MENU DEL GIORNO" in post["text"]
+
 
 def is_date_today(date):
     today = datetime.datetime.today()
@@ -74,6 +78,7 @@ def is_date_today(date):
 
 
 def format_dubai(menu):
+    menu = menu.replace("Altro", "")
     menu = menu.replace("Oggi vi proponiamo:", "Buongiorno, oggi vi proponiamo: 🍽️")
     menu = menu.replace("PRIMI", "\nPRIMI 🍝")
     menu = menu.replace("SECONDI", "\nSECONDI 🍖")
@@ -86,6 +91,8 @@ def format_dubai(menu):
     menu = menu.replace("-", "\n - ")
 
     menu = menu + "\n\nVI ASPETTIAMO!"
+
+    menu = "\tMENÙ DUBAI 📋\n\n" + menu
     return menu
 
 
@@ -98,7 +105,7 @@ def lowercase_menu(menu):
         # Tratta titoli, introduzione e insalate
         if line.startswith("PRIMI") or line.startswith("SECONDI") or line.startswith("CONTORNI") or line.startswith(
                 "PIATTI FREDDI") or line.startswith("INSALATE") or line.startswith("DOLCI") or line.startswith(
-            "FRUTTA") or line.startswith(" - INSALATA") or line.startswith("Buongiorno"):
+            "FRUTTA") or line.startswith(" - INSALATA") or line.startswith("Buongiorno") or line.startswith("PER PRENOTAZIONI"):
             # Mantieni maiuscole e minuscole originali
             lines[i] = line
         else:
@@ -114,30 +121,35 @@ def lowercase_menu(menu):
 def format_doc(menu):
     date_pattern = r'\d{2}/\d{2}/\d{4}'
 
-    # Sostituisci tutte le occorrenze del pattern con un testo specifico (ad esempio, "DATA_RIMOSSA")
-    menu = re.sub(date_pattern, "", menu)
-    menu = menu.replace("\nPER PRENOTAZIONI CHIAMARE IL NUMERO.3385305973. Lucia \n", "\n")
+    menu = re.sub(date_pattern, "", menu)   # Sostituisci tutte le occorrenze del pattern con un testo specifico (ad esempio, "DATA_RIMOSSA")
+    menu = menu.replace("PER PRENOTAZIONI CHIAMARE IL NUMERO.3385305973. Lucia", "\nPER PRENOTAZIONI CHIAMARE IL 3385305973 ~Lucia 📞\n\nBuongiorno, oggi vi proponiamo: 🍽\n")
+    menu = menu.replace("Altro", "")
     menu = menu.replace("\n", "\n-")
     menu = menu.replace("\n-\n", "\n")
 
-    menu = menu.replace("MENU DEL GIORNO", "Buongiorno, oggi vi proponiamo: 🍽")
+    menu = menu.replace("MENU DEL GIORNO", "")
+    menu = menu.replace("-PER PRENOTAZIONI CHIAMARE IL 3385305973 ~Lucia", "PER PRENOTAZIONI CHIAMARE IL 3385305973 ~Lucia")
+    menu = menu.replace("-Buongiorno, oggi vi proponiamo: 🍽", "\nBuongiorno, oggi vi proponiamo: 🍽")
     menu = menu.replace("-PRIMI", "\nPRIMI 🍝")
-    menu = menu.replace("-SECONDO", "\nSECONDI 🍖")
+    menu = menu.replace("-SECONDI", "\nSECONDI 🍖")
     menu = menu.replace("-CONTORNI", "\nCONTORNI 🍟🥦")
     menu = menu.replace("-INSALATE:", "\nINSALATE 🥗")
     menu = menu.replace("-DESSERT:", "\nDOLCI 🍰")
     menu = menu.replace("-FRUTTA:", "\nFRUTTA 🍎🍍🥛")
     menu = menu.replace("-PIATTI FREDDI:", "\nPIATTI FREDDI 🍱 ")
+    menu = menu.replace("\n(", "(")
 
     # Aggiungi uno spazio dopo i trattini
     menu = menu.replace(" -", "-")
-    # menu = menu.replace("\n-", "\n-")
     menu = menu.replace("-", " - ")
 
     menu = lowercase_menu(menu)
     menu = menu + "\n\nVI ASPETTIAMO!"
     menu = menu.replace("inasalata", "insalata")
+    menu = "MENÙ DOC 📝\n" + menu
+
     return menu
+
 
 if __name__ == '__main__':
     os.environ["SECRETS"] = "secrets.json"
