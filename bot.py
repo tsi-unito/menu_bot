@@ -100,12 +100,12 @@ async def unsubscription_command(update: Update, context: ContextTypes.DEFAULT_T
     global engine
     with Session(engine) as session:
         user = session.query(BotUser).filter(BotUser.uid == chat_id).first()
-        if update.message.text[11:] == "doc":
-            if user.doc:
+        if update.message.text[13:] == "doc":
+            if not user.doc:
                 text = f"Non sei iscritto al menù del doc"
             user.doc = False
-        elif update.message.text[11:] == "dubai":
-            if user.dubai:
+        elif update.message.text[13:] == "dubai":
+            if not user.dubai:
                 text = f"Non sei iscritto al menù del dubai"
             user.dubai = False
         session.commit()
