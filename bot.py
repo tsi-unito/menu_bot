@@ -11,7 +11,7 @@ import json
 from telegram import Update, BotCommand, Bot
 from telegram.ext import ApplicationBuilder, ContextTypes, CommandHandler, MessageHandler, filters
 import os
-from sql_alchemy.database_connect import BotUser, Base
+from sql_alchemy.database_connect import BotUser, Base, BotAdmin
 
 global engine
 
@@ -30,6 +30,16 @@ def add_user(uid: int):
         if not session.query(BotUser).filter(BotUser.uid == uid).first():
             session.add(BotUser(uid=uid))
             session.commit()
+
+
+def is_admin(uid: int):
+    global engine
+    with Session(engine) as session:
+        if session.query(BotAdmin).filter(BotAdmin.uid == uid).first():
+            return session.query(BotAdmin).filter(BotAdmin.uid == uid).first().is_admin
+        else:
+            return False
+
 
 async def menu_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if datetime.datetime.today().weekday() == 5 or datetime.datetime.today().weekday() == 6:
@@ -68,13 +78,15 @@ async def menu_command_callback(context: ContextTypes.DEFAULT_TYPE):
     print(f"job: {context.job.name}")
     job = context.job
     await context.bot.send_message(chat_id=job.chat_id,
-                                   text=scraper.get_menu(f"{job.data}")["text"], parse_mode=ParseMode.HTML, disable_web_page_preview=Trues)
+                                   text=scraper.get_menu(f"{job.data}")["text"], parse_mode=ParseMode.HTML,
+                                   disable_web_page_preview=True)
 
 
 async def subscription_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id = update.effective_message.chat_id
-    text = (f"Iscrizione effettuata, riceverai il menù del {update.message.text.split('_')[1]} ogni giorno alle 11:30\n Per "
-            f"cancellare l' iscrizione scrivi /stop_{update.message.text.split('_')[1]}")
+    text = (
+        f"Iscrizione effettuata, riceverai il menù del {update.message.text.split('_')[1]} ogni giorno alle 11:30\n Per "
+        f"cancellare l' iscrizione scrivi /stop_{update.message.text.split('_')[1]}")
     add_user(chat_id)
     global engine
     with Session(engine) as session:
@@ -118,7 +130,7 @@ async def unknown(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 async def print_subscribers(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    if update.effective_user.id != 532629429:
+    if not is_admin(update.effective_chat.id):
         return
 
     with Session(engine) as session:
@@ -167,7 +179,6 @@ async def send_menus(context: ContextTypes.DEFAULT_TYPE):
         await context.bot.send_message(chat_id=uid, text=menu_dubai["text"], parse_mode=ParseMode.HTML)
 
 
-
 def init_db():
     global engine
     if not inspect(engine).has_table("subscriptions"):  # If table don't exist, Create.
@@ -182,6 +193,9 @@ def init_db():
 
 
 async def load_commands(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if not is_admin(update.effective_chat.id):
+        return
+
     await context.bot.set_my_commands([
         BotCommand("doc", "Stampa menù del giorno del doc"),
         BotCommand("dubai", "Stampa menù del giorno del dubai"),
@@ -193,12 +207,14 @@ async def load_commands(update: Update, context: ContextTypes.DEFAULT_TYPE):
     ])
     await context.bot.send_message(chat_id=update.effective_chat.id, text="comandi aggiornati")
 
+
 async def send_menus_wrapper(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    if update.effective_user.id == 532629429:
+    if is_admin(update.effective_chat.id):
         await send_menus(context)
 
+
 async def announce(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    if not update.effective_user.id == 532629429:
+    if not is_admin(update.effective_chat.id):
         return
 
     global engine
@@ -216,6 +232,7 @@ async def announce(update: Update, context: ContextTypes.DEFAULT_TYPE):
     for user in users:
         await context.bot.send_message(chat_id=user.uid, text="ANNUNCIO: " + update.message.text[10:])
 
+
 if __name__ == '__main__':
     if os.getenv("SECRETS") is None:
         os.environ["SECRETS"] = "secrets.json"
@@ -224,7 +241,7 @@ if __name__ == '__main__':
         config = json.load(file)
 
     if os.getenv("DOCKER") is None:
-        config["db_host"]="localhost"
+        config["db_host"] = "localhost"
 
     application = ApplicationBuilder().token(config['token']).build()
 
@@ -240,10 +257,10 @@ if __name__ == '__main__':
     # https://docs.sqlalchemy.org/en/20/core/engines.html#creating-urls-programmatically
     engine = create_engine(sqlalchemy.URL.create(
         "mysql+pymysql",
-        username= config["db_username"],
-        password= config["db_password"],
-        host= config["db_host"],
-        database= config["database"],
+        username=config["db_username"],
+        password=config["db_password"],
+        host=config["db_host"],
+        database=config["database"],
     ))
 
     Base.metadata.create_all(engine)
