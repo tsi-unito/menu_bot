@@ -68,7 +68,7 @@ async def menu_command_callback(context: ContextTypes.DEFAULT_TYPE):
     print(f"job: {context.job.name}")
     job = context.job
     await context.bot.send_message(chat_id=job.chat_id,
-                                   text=scraper.get_menu(f"{job.data}")["text"], parse_mode=ParseMode.HTML, disable_web_page_preview=Trues)
+                                   text=scraper.get_menu(f"{job.data}")["text"], parse_mode=ParseMode.HTML, disable_web_page_preview=True)
 
 
 async def subscription_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
