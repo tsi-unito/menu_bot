@@ -41,6 +41,33 @@ def is_admin(uid: int):
             return False
 
 
+async def add_admin(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    global engine
+    if not is_admin(update.effective_chat.id):
+        logging.log(logging.INFO, f"user: {update.effective_chat.id} tried to run 'add admin' without admin "
+                              f"privileges")
+        await context.bot.send_message(chat_id=update.effective_chat.id,
+                                       text="non sei amministratore, azione segnalata")
+    else:
+        if update.message.text.split(" ")[1].isdecimal():
+            uid = int(update.message.text.split(" ")[1])
+        else:
+            await context.bot.send_message(chat_id=update.effective_chat.id,
+                                           text=f"user id errato")
+            return
+        with Session(engine) as session:
+            if not session.query(BotAdmin).filter(BotAdmin.uid == uid).first():
+                session.add(BotAdmin(uid=uid))
+                session.commit()
+                await context.bot.send_message(chat_id=update.effective_chat.id,
+                                       text=f"l'utente {uid} è ora amministratore")
+                logging.log(logging.INFO, f"user: {uid} is now admin")
+            else:
+                await context.bot.send_message(chat_id=update.effective_chat.id,
+                                       text=f"l'utente {uid} è già amministratore")
+
+
+
 async def menu_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if datetime.datetime.today().weekday() == 5 or datetime.datetime.today().weekday() == 6:
         await context.bot.send_message(chat_id=update.effective_chat.id,
@@ -131,6 +158,8 @@ async def unknown(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 async def print_subscribers(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not is_admin(update.effective_chat.id):
+        logging.log(logging.INFO, f"user: {update.effective_chat.id} tried to run 'print_subscribers' without admin "
+                                  f"privileges")
         return
 
     with Session(engine) as session:
@@ -194,6 +223,8 @@ def init_db():
 
 async def load_commands(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not is_admin(update.effective_chat.id):
+        logging.log(logging.INFO,f"user: {update.effective_chat.id} tried to run 'load_commands' without admin "
+                                 f"privileges")
         return
 
     await context.bot.set_my_commands([
@@ -211,10 +242,15 @@ async def load_commands(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def send_menus_wrapper(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if is_admin(update.effective_chat.id):
         await send_menus(context)
+    else:
+        logging.log(logging.INFO, f"user: {update.effective_chat.id} tried to run 'send_menus_wrapper' without admin "
+                                  f"privileges")
 
 
 async def announce(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not is_admin(update.effective_chat.id):
+        logging.log(logging.INFO,f"user: {update.effective_chat.id} tried to run 'announce' without admin "
+                                 f"privileges")
         return
 
     global engine
@@ -277,6 +313,7 @@ if __name__ == '__main__':
     application.add_handler(CommandHandler('stop_dubai', unsubscription_command))
     application.add_handler(CommandHandler('subscribers', print_subscribers))
     application.add_handler(CommandHandler('set_commands', load_commands))
+    application.add_handler(CommandHandler('add_admin', add_admin))
     application.add_handler(MessageHandler(filters.COMMAND, unknown))
 
     application.run_polling(allowed_updates=Update.ALL_TYPES)
