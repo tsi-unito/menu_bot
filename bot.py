@@ -8,7 +8,7 @@ from telegram.constants import ParseMode
 
 import scraper
 import json
-from telegram import Update, BotCommand, Bot, ReplyKeyboardMarkup, KeyboardButton
+from telegram import Update, BotCommand, Bot, KeyboardButton, ReplyKeyboardMarkup
 from telegram.ext import ApplicationBuilder, ContextTypes, CommandHandler, MessageHandler, filters
 import os
 from sql_alchemy.database_connect import BotUser, Base
@@ -31,7 +31,6 @@ def add_user(uid: int):
             session.add(BotUser(uid=uid))
             session.commit()
 
-
 def grid():
     keyboard = [
         [KeyboardButton('Start Dubai'), KeyboardButton('Stop Dubai')],
@@ -43,40 +42,27 @@ def grid():
     reply_markup = ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
 
     return reply_markup
-
 async def menu_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if datetime.datetime.today().weekday() == 5 or datetime.datetime.today().weekday() == 6:
         await context.bot.send_message(chat_id=update.effective_chat.id,
                                        text="Oggi il ristorante è chiuso")
     else:
         await context.bot.send_message(chat_id=update.effective_chat.id,
-                                       text=scraper.get_menu(f"{update.message.text[1:]}")["text"],
-                                       parse_mode=ParseMode.HTML)
+                                           text=scraper.get_menu(f"{update.message.text[1:]}")["text"],
+                                           parse_mode=ParseMode.HTML, disable_web_page_preview=True)
 
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     # db_connector.add_user(update.effective_user.id)
     add_user(update.effective_user.id)
 
-    if update.effective_chat.id > 0:
-        keyboard = grid()
-
-        await context.bot.send_message(chat_id=update.effective_chat.id,
-                                       reply_markup=keyboard,
-                                       parse_mode=ParseMode.HTML,
-                                       text="<i>Benvenuto nel bot del ristorante Doc&Dubai</i>\n\nPuoi richiedere i menu "
-                                            "dei due ristoranti usando rispettivamente /doc e /dubai\n\n"
-                                            "Per iscriverti al menù giornaliero usa /subscribe_doc o /subscribe_dubai "
-                                            ", riceverai il menù alle 11:30 ogni giorno\n\n"
-                                            "/help per mostrare questo messaggio")
-    else:
-        await context.bot.send_message(chat_id=update.effective_chat.id,
-                                       parse_mode=ParseMode.HTML,
-                                       text="<i>Benvenuto nel bot del ristorante Doc&Dubai</i>\n\nPuoi richiedere i menu "
-                                            "dei due ristoranti usando rispettivamente /doc e /dubai\n\n"
-                                            "Per iscriverti al menù giornaliero usa /subscribe_doc o /subscribe_dubai "
-                                            ", riceverai il menù alle 11:30 ogni giorno\n\n"
-                                            "/help per mostrare questo messaggio")
+    await context.bot.send_message(chat_id=update.effective_chat.id,
+                                   parse_mode=ParseMode.HTML,
+                                   text="<i>Benvenuto nel bot del ristorante Doc&Dubai</i>\n\nPuoi richiedere i menu "
+                                        "dei due ristoranti usando rispettivamente /doc e /dubai\n\n"
+                                        "Per iscriverti al menù giornaliero usa /start_doc o /start_dubai "
+                                        ", riceverai il menù alle 11:30 ogni giorno\n\n"
+                                        "/help per mostrare questo messaggio")
 
 
 async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -84,7 +70,7 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
                                    parse_mode=ParseMode.HTML,
                                    text="<i>Benvenuto nel bot del ristorante Doc&Dubai</i>\n\nPuoi richiedere i menu "
                                         "dei due ristoranti usando rispettivamente /doc e /dubai\n\n"
-                                        "Per iscriverti al menù giornaliero usa /subscribe_doc o /subscribe_dubai "
+                                        "Per iscriverti al menù giornaliero usa /start_doc o /start_dubai "
                                         ", riceverai il menù alle 11:30 ogni giorno\n\n"
                                         "/help per mostrare questo messaggio")
 
@@ -93,24 +79,30 @@ async def menu_command_callback(context: ContextTypes.DEFAULT_TYPE):
     print(f"job: {context.job.name}")
     job = context.job
     await context.bot.send_message(chat_id=job.chat_id,
-                                   text=scraper.get_menu(f"{job.data}")["text"], parse_mode=ParseMode.HTML)
+                                   text=scraper.get_menu(f"{job.data}")["text"], parse_mode=ParseMode.HTML, disable_web_page_preview=True)
 
 
 async def subscription_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id = update.effective_message.chat_id
-    text = (f"Iscrizione effettuata, riceverai il menù del {update.message.text[11:]} ogni giorno alle 11:30\n Per "
-            f"cancellare l' iscrizione scrivi /unsubscribe_{update.message.text[11:]}")
+    if update.message.text.lower().split()[1] == "dubai" or update.message.text.lower().split()[1] == "doc":
+        resturant = update.message.text.lower().split()[1]
+    else:
+        resturant = update.message.text.split('_')[1]
+
+    text = (f"Iscrizione effettuata, riceverai il menù del {resturant} ogni giorno alle 11:30\n"
+            f"Per cancellare l'iscrizione scrivi /stop_{resturant}")
     add_user(chat_id)
     global engine
     with Session(engine) as session:
         user = session.query(BotUser).filter(BotUser.uid == chat_id).first()
-        if update.message.text[11:] == "doc":
+
+        if resturant == "doc":
             if user.doc:
-                text = f"Sei già iscritto al menù del doc, per cancellare l' iscrizione scrivi /unsubscribe_doc"
+                text = f"Sei già iscritto al menù del doc, per cancellare l' iscrizione scrivi /stop_doc"
             user.doc = True
-        elif update.message.text[11:] == "dubai":
+        elif resturant == "dubai":
             if user.dubai:
-                text = f"Sei già iscritto al menù del dubai, per cancellare l' iscrizione scrivi /unsubscribe_dubai"
+                text = f"Sei già iscritto al menù del dubai, per cancellare l' iscrizione scrivi /stop_dubai"
             user.dubai = True
         session.commit()
 
@@ -120,16 +112,22 @@ async def subscription_command(update: Update, context: ContextTypes.DEFAULT_TYP
 
 async def unsubscription_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id = update.effective_message.chat_id
-    text = f"Iscrizione cancellata, non riceverai più il menù del {update.message.text[13:]}\n"
+    if update.message.text.lower().split()[1] == "dubai" or update.message.text.lower().split()[1] == "doc":
+        resturant = update.message.text.lower().split()[1]
+    else:
+        resturant = update.message.text.split('_')[1]
+
+    text = f"Iscrizione cancellata, non riceverai più il menù del {resturant}\n"
+
     add_user(chat_id)
     global engine
     with Session(engine) as session:
         user = session.query(BotUser).filter(BotUser.uid == chat_id).first()
-        if update.message.text[13:] == "doc":
+        if resturant == "doc":
             if not user.doc:
                 text = f"Non sei iscritto al menù del doc"
             user.doc = False
-        elif update.message.text[13:] == "dubai":
+        elif resturant == "dubai":
             if not user.dubai:
                 text = f"Non sei iscritto al menù del dubai"
             user.dubai = False
@@ -138,11 +136,14 @@ async def unsubscription_command(update: Update, context: ContextTypes.DEFAULT_T
                                    text=text)
 
 
-async def unknown(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def unknown_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await context.bot.send_message(chat_id=update.effective_chat.id, text="Questo comando non esiste. Usa la tastiera personalizzata per aiutarti!")
+
+async def unknown_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
     text = update.message.text.lower()
 
     if text == 'start dubai' or text == 'start doc':
-        await menu_command(update, context)
+        await subscription_command(update, context)
     elif text == 'stop dubai' or text == 'stop doc':
         await unsubscription_command(update, context)
     elif text == 'help':
@@ -156,7 +157,6 @@ async def unknown(update: Update, context: ContextTypes.DEFAULT_TYPE):
     else:
         keyboard = grid()
         await context.bot.send_message(chat_id=update.effective_chat.id, reply_markup=keyboard, text="Questo comando non esiste. Usa la tastiera personalizzata per aiutarti!")
-
 
 async def print_subscribers(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if update.effective_user.id != 532629429:
@@ -226,12 +226,13 @@ async def load_commands(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await context.bot.set_my_commands([
         BotCommand("doc", "Stampa menù del giorno del doc"),
         BotCommand("dubai", "Stampa menù del giorno del dubai"),
-        BotCommand("subscribe_doc", "ricevi il menù del doc ogni giorno"),
-        BotCommand("subscribe_dubai", "ricevi il menù del dubai ogni giorno"),
-        BotCommand("unsubscribe_doc", "non ricevere il menù del doc ogni giorno"),
-        BotCommand("unsubscribe_dubai", "non ricevere il menù del dubai ogni giorno"),
+        BotCommand("start_doc", "ricevi il menù del doc ogni giorno"),
+        BotCommand("start_dubai", "ricevi il menù del dubai ogni giorno"),
+        BotCommand("stop_doc", "non ricevere il menù del doc ogni giorno"),
+        BotCommand("stop_dubai", "non ricevere il menù del dubai ogni giorno"),
         BotCommand("help", "mostra messaggio di aiuto")
     ])
+    await context.bot.send_message(chat_id=update.effective_chat.id, text="comandi aggiornati")
 
 async def send_menus_wrapper(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if update.effective_user.id == 532629429:
@@ -253,10 +254,8 @@ async def announce(update: Update, context: ContextTypes.DEFAULT_TYPE):
             print(f"error while getting users: {e}")
             retry = retry + 1
 
-    keyboard = grid()
-
     for user in users:
-        await context.bot.send_message(chat_id=user.uid, reply_markup=keyboard, text="⚠️<b>ANNUNCIO</b>⚠️\n " + update.message.text[10:])
+        await context.bot.send_message(chat_id=user.uid, text="ANNUNCIO: " + update.message.text[10:])
 
 if __name__ == '__main__':
     if os.getenv("SECRETS") is None:
@@ -296,12 +295,13 @@ if __name__ == '__main__':
     application.add_handler(CommandHandler('doc', menu_command))
     application.add_handler(CommandHandler('send', send_menus_wrapper))
     application.add_handler(CommandHandler('announce', announce))
-    application.add_handler(CommandHandler('subscribe_doc', subscription_command))
-    application.add_handler(CommandHandler('subscribe_dubai', subscription_command))
-    application.add_handler(CommandHandler('unsubscribe_doc', unsubscription_command))
-    application.add_handler(CommandHandler('unsubscribe_dubai', unsubscription_command))
+    application.add_handler(CommandHandler('start_doc', subscription_command))
+    application.add_handler(CommandHandler('start_dubai', subscription_command))
+    application.add_handler(CommandHandler('stop_doc', unsubscription_command))
+    application.add_handler(CommandHandler('stop_dubai', unsubscription_command))
     application.add_handler(CommandHandler('subscribers', print_subscribers))
     application.add_handler(CommandHandler('set_commands', load_commands))
-    application.add_handler(MessageHandler(filters.COMMAND, unknown))
+    application.add_handler(MessageHandler(filters.COMMAND, unknown_command))
+    application.add_handler(MessageHandler(None, unknown_text))
 
     application.run_polling(allowed_updates=Update.ALL_TYPES)
