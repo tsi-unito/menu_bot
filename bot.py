@@ -84,10 +84,11 @@ async def menu_command_callback(context: ContextTypes.DEFAULT_TYPE):
 
 async def subscription_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id = update.effective_message.chat_id
-    if update.message.text.lower().split()[1] == "dubai" or update.message.text.lower().split()[1] == "doc":
-        resturant = update.message.text.lower().split()[1]
-    else:
+    resturant = ""
+    if update.message.text[0] == "/":
         resturant = update.message.text.split('_')[1]
+    elif update.message.text.lower().split()[1] == "dubai" or update.message.text.lower().split()[1] == "doc":
+        resturant = update.message.text.lower().split()[1]
 
     text = (f"Iscrizione effettuata, riceverai il menù del {resturant} ogni giorno alle 11:30\n"
             f"Per cancellare l'iscrizione scrivi /stop_{resturant}")
@@ -112,10 +113,12 @@ async def subscription_command(update: Update, context: ContextTypes.DEFAULT_TYP
 
 async def unsubscription_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id = update.effective_message.chat_id
-    if update.message.text.lower().split()[1] == "dubai" or update.message.text.lower().split()[1] == "doc":
-        resturant = update.message.text.lower().split()[1]
-    else:
+    resturant = ""
+
+    if update.message.text[0] == "/":
         resturant = update.message.text.split('_')[1]
+    elif update.message.text.lower().split()[1] == "dubai" or update.message.text.lower().split()[1] == "doc":
+        resturant = update.message.text.lower().split()[1]
 
     text = f"Iscrizione cancellata, non riceverai più il menù del {resturant}\n"
 
