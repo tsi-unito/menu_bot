@@ -31,7 +31,8 @@ def add_user(uid: int):
             session.add(BotUser(uid=uid))
             session.commit()
 
-def grid():
+def grid
+
     keyboard = [
         [KeyboardButton('Start Dubai'), KeyboardButton('Stop Dubai')],
         [KeyboardButton('Start Doc'), KeyboardButton('Stop Doc')],
@@ -48,9 +49,8 @@ async def menu_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
                                        text="Oggi il ristorante è chiuso")
     else:
         await context.bot.send_message(chat_id=update.effective_chat.id,
-                                           text=scraper.get_menu(f"{update.message.text[1:]}")["text"],
-                                           parse_mode=ParseMode.HTML, disable_web_page_preview=True)
-
+                                       text=scraper.get_menu(f"{update.message.text[1:]}")["text"],
+                                       parse_mode=ParseMode.HTML, disable_web_page_preview=True)
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     # db_connector.add_user(update.effective_user.id)
@@ -96,12 +96,12 @@ async def subscription_command(update: Update, context: ContextTypes.DEFAULT_TYP
     global engine
     with Session(engine) as session:
         user = session.query(BotUser).filter(BotUser.uid == chat_id).first()
-
         if resturant == "doc":
             if user.doc:
                 text = f"Sei già iscritto al menù del doc, per cancellare l' iscrizione scrivi /stop_doc"
             user.doc = True
         elif resturant == "dubai":
+
             if user.dubai:
                 text = f"Sei già iscritto al menù del dubai, per cancellare l' iscrizione scrivi /stop_dubai"
             user.dubai = True
@@ -308,3 +308,5 @@ if __name__ == '__main__':
     application.add_handler(MessageHandler(None, unknown_text))
 
     application.run_polling(allowed_updates=Update.ALL_TYPES)
+
+   
