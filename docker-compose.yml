@@ -28,12 +28,16 @@ services:
     environment:
       DOCKER: "True"
       SECRETS: /run/secrets/secrets
+      COOKIES: /run/secrets/cookies
     secrets:
       - secrets
+      - cookies
 
 secrets:
     secrets:
         file: ./secrets.json
+    cookies:
+        file: ./cookies.json
 
 volumes:
   mariadb_volume:
