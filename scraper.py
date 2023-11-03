@@ -7,11 +7,6 @@ import datetime
 
 
 def download_menu(resturant):
-    if os.getenv("SECRETS") is None:
-        os.environ["SECRETS"] = "secrets.json"
-
-    with open(os.getenv("SECRETS"), "r") as file:
-        config = json.load(file)
 
     account = ""
     if resturant == "dubai":
@@ -26,7 +21,7 @@ def download_menu(resturant):
     tries = 0
     while not download_succeeded and tries < 5:
         try:
-            posts = facebook_scraper.get_posts(account, pages=1, credentials=(config["username"], config["password"]))
+            posts = facebook_scraper.get_posts(account, pages=1, cookies=os.environ["COOKIES"])
             download_succeeded = True
         except Exception as e:
             print(f"could not download menu, error:\n{e}")
@@ -151,6 +146,6 @@ def format_doc(menu):
 
 
 if __name__ == '__main__':
-    os.environ["SECRETS"] = "secrets.json"
+    os.environ["COOKIES"] = "cookies.json"
     print(get_menu("doc"))
     print(get_menu("dubai"))
