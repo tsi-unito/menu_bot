@@ -219,6 +219,8 @@ async def announce(update: Update, context: ContextTypes.DEFAULT_TYPE):
 if __name__ == '__main__':
     if os.getenv("SECRETS") is None:
         os.environ["SECRETS"] = "secrets.json"
+    if os.getenv("COOKIES") is None:
+        os.environ["COOKIES"] = "cookies.json"
 
     with open(os.getenv("SECRETS"), "r") as file:
         config = json.load(file)
