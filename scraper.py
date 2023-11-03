@@ -23,23 +23,24 @@ def download_menu(resturant):
         try:
             posts = facebook_scraper.get_posts(account, pages=1, cookies=os.environ["COOKIES"])
             download_succeeded = True
+            post = next(posts)
+            while not is_menu(post, resturant) or not is_date_today(post['time']):
+                post = next(posts)
+
+            if resturant == "dubai":
+                post["text"] = format_dubai(post["text"])
+            elif resturant == "doc":
+                post["text"] = format_doc(post["text"])
+
+            with open(f"menu_{resturant}.json", "w") as f:
+                json.dump(post, f, indent=4, default=str)
         except Exception as e:
             print(f"could not download menu, error:\n{e}")
             print("retrying...")
             tries += 1
             time.sleep(1)
 
-    post = next(posts)
-    while not is_menu(post, resturant) or not is_date_today(post['time']):
-        post = next(posts)
 
-    if resturant == "dubai":
-        post["text"] = format_dubai(post["text"])
-    elif resturant == "doc":
-        post["text"] = format_doc(post["text"])
-
-    with open(f"menu_{resturant}.json", "w") as f:
-        json.dump(post, f, indent=4, default=str)
 
 
 def get_menu(resturant):
