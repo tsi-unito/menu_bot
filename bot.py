@@ -31,8 +31,8 @@ def add_user(uid: int):
             session.add(BotUser(uid=uid))
             session.commit()
 
-def grid
 
+def grid():
     keyboard = [
         [KeyboardButton('Start Dubai'), KeyboardButton('Stop Dubai')],
         [KeyboardButton('Start Doc'), KeyboardButton('Stop Doc')],
@@ -43,6 +43,8 @@ def grid
     reply_markup = ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
 
     return reply_markup
+
+
 async def menu_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if datetime.datetime.today().weekday() == 5 or datetime.datetime.today().weekday() == 6:
         await context.bot.send_message(chat_id=update.effective_chat.id,
@@ -51,6 +53,7 @@ async def menu_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await context.bot.send_message(chat_id=update.effective_chat.id,
                                        text=scraper.get_menu(f"{update.message.text[1:]}")["text"],
                                        parse_mode=ParseMode.HTML, disable_web_page_preview=True)
+
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     # db_connector.add_user(update.effective_user.id)
@@ -79,7 +82,8 @@ async def menu_command_callback(context: ContextTypes.DEFAULT_TYPE):
     print(f"job: {context.job.name}")
     job = context.job
     await context.bot.send_message(chat_id=job.chat_id,
-                                   text=scraper.get_menu(f"{job.data}")["text"], parse_mode=ParseMode.HTML, disable_web_page_preview=True)
+                                   text=scraper.get_menu(f"{job.data}")["text"], parse_mode=ParseMode.HTML,
+                                   disable_web_page_preview=True)
 
 
 async def subscription_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -140,7 +144,9 @@ async def unsubscription_command(update: Update, context: ContextTypes.DEFAULT_T
 
 
 async def unknown_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await context.bot.send_message(chat_id=update.effective_chat.id, text="Questo comando non esiste. Usa la tastiera personalizzata per aiutarti!")
+    await context.bot.send_message(chat_id=update.effective_chat.id,
+                                   text="Questo comando non esiste. Usa la tastiera personalizzata per aiutarti!")
+
 
 async def unknown_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
     text = update.message.text.lower()
@@ -151,15 +157,17 @@ async def unknown_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await unsubscription_command(update, context)
     elif text == 'help':
         await help_command(update, context)
-    #elif text == 'autori':
-        #comando autori
-    #elif text == 'stop':
-        #comando stop
-    #elif text == 'faq':
-        #comando FAQ
+    # elif text == 'autori':
+    # comando autori
+    # elif text == 'stop':
+    # comando stop
+    # elif text == 'faq':
+    # comando FAQ
     else:
         keyboard = grid()
-        await context.bot.send_message(chat_id=update.effective_chat.id, reply_markup=keyboard, text="Questo comando non esiste. Usa la tastiera personalizzata per aiutarti!")
+        await context.bot.send_message(chat_id=update.effective_chat.id, reply_markup=keyboard,
+                                       text="Questo comando non esiste. Usa la tastiera personalizzata per aiutarti!")
+
 
 async def print_subscribers(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if update.effective_user.id != 532629429:
@@ -211,7 +219,6 @@ async def send_menus(context: ContextTypes.DEFAULT_TYPE):
         await context.bot.send_message(chat_id=uid, text=menu_dubai["text"], parse_mode=ParseMode.HTML)
 
 
-
 def init_db():
     global engine
     if not inspect(engine).has_table("subscriptions"):  # If table don't exist, Create.
@@ -237,9 +244,11 @@ async def load_commands(update: Update, context: ContextTypes.DEFAULT_TYPE):
     ])
     await context.bot.send_message(chat_id=update.effective_chat.id, text="comandi aggiornati")
 
+
 async def send_menus_wrapper(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if update.effective_user.id == 532629429:
         await send_menus(context)
+
 
 async def announce(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not update.effective_user.id == 532629429:
@@ -260,6 +269,7 @@ async def announce(update: Update, context: ContextTypes.DEFAULT_TYPE):
     for user in users:
         await context.bot.send_message(chat_id=user.uid, text="ANNUNCIO: " + update.message.text[10:])
 
+
 if __name__ == '__main__':
     if os.getenv("SECRETS") is None:
         os.environ["SECRETS"] = "secrets.json"
@@ -270,7 +280,7 @@ if __name__ == '__main__':
         config = json.load(file)
 
     if os.getenv("DOCKER") is None:
-        config["db_host"]="localhost"
+        config["db_host"] = "localhost"
 
     application = ApplicationBuilder().token(config['token']).build()
 
@@ -286,10 +296,10 @@ if __name__ == '__main__':
     # https://docs.sqlalchemy.org/en/20/core/engines.html#creating-urls-programmatically
     engine = create_engine(sqlalchemy.URL.create(
         "mysql+pymysql",
-        username= config["db_username"],
-        password= config["db_password"],
-        host= config["db_host"],
-        database= config["database"],
+        username=config["db_username"],
+        password=config["db_password"],
+        host=config["db_host"],
+        database=config["database"],
     ))
 
     Base.metadata.create_all(engine)
@@ -310,5 +320,3 @@ if __name__ == '__main__':
     application.add_handler(MessageHandler(None, unknown_text))
 
     application.run_polling(allowed_updates=Update.ALL_TYPES)
-
-   
