@@ -286,12 +286,14 @@ if __name__ == '__main__':
 
     application.job_queue.run_daily(download_menus, days=(1, 2, 3, 4, 5),
                                     time=datetime.time(hour=10, minute=00, second=00,
-                                                       tzinfo=pytz.timezone('Europe/Rome')))
+                                                       tzinfo=pytz.timezone('Europe/Rome')),
+                                    job_kwargs={"misfire_grace_time": None})
     # Due to a bug Job_queue is skipping job if timezone is not provided for job.run_daily.
 
     application.job_queue.run_daily(send_menus, days=(1, 2, 3, 4, 5),
                                     time=datetime.time(hour=11, minute=30, second=00,
-                                                       tzinfo=pytz.timezone('Europe/Rome')))
+                                                       tzinfo=pytz.timezone('Europe/Rome')),
+                                    job_kwargs={"misfire_grace_time": None})
 
     # https://docs.sqlalchemy.org/en/20/core/engines.html#creating-urls-programmatically
     engine = create_engine(sqlalchemy.URL.create(
