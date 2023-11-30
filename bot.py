@@ -41,6 +41,7 @@ def is_admin(uid: int):
 
 def grid():
 
+def grid():
     keyboard = [
         [KeyboardButton('Start Dubai'), KeyboardButton('Stop Dubai')],
         [KeyboardButton('Start Doc'), KeyboardButton('Stop Doc')],
@@ -51,6 +52,8 @@ def grid():
     reply_markup = ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
 
     return reply_markup
+
+
 
 async def add_admin(update: Update, context: ContextTypes.DEFAULT_TYPE):
     global engine
@@ -86,6 +89,7 @@ async def menu_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await context.bot.send_message(chat_id=update.effective_chat.id,
                                        text=scraper.get_menu(f"{update.message.text[1:]}")["text"],
                                        parse_mode=ParseMode.HTML, disable_web_page_preview=True)
+
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     # db_connector.add_user(update.effective_user.id)
@@ -176,7 +180,9 @@ async def unsubscription_command(update: Update, context: ContextTypes.DEFAULT_T
 
 
 async def unknown_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await context.bot.send_message(chat_id=update.effective_chat.id, text="Questo comando non esiste. Usa la tastiera personalizzata per aiutarti!")
+    await context.bot.send_message(chat_id=update.effective_chat.id,
+                                   text="Questo comando non esiste. Usa la tastiera personalizzata per aiutarti!")
+
 
 async def unknown_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
     text = update.message.text.lower()
@@ -187,15 +193,17 @@ async def unknown_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await unsubscription_command(update, context)
     elif text == 'help':
         await help_command(update, context)
-    #elif text == 'autori':
-        #comando autori
-    #elif text == 'stop':
-        #comando stop
-    #elif text == 'faq':
-        #comando FAQ
+    # elif text == 'autori':
+    # comando autori
+    # elif text == 'stop':
+    # comando stop
+    # elif text == 'faq':
+    # comando FAQ
     else:
         keyboard = grid()
-        await context.bot.send_message(chat_id=update.effective_chat.id, reply_markup=keyboard, text="Questo comando non esiste. Usa la tastiera personalizzata per aiutarti!")
+        await context.bot.send_message(chat_id=update.effective_chat.id, reply_markup=keyboard,
+                                       text="Questo comando non esiste. Usa la tastiera personalizzata per aiutarti!")
+
 
 async def print_subscribers(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not is_admin(update.effective_chat.id):
@@ -288,6 +296,7 @@ async def send_menus_wrapper(update: Update, context: ContextTypes.DEFAULT_TYPE)
                                   f"privileges")
 
 
+
 async def announce(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not is_admin(update.effective_chat.id):
         logging.log(logging.INFO,f"user: {update.effective_chat.id} tried to run 'announce' without admin "
@@ -313,6 +322,8 @@ async def announce(update: Update, context: ContextTypes.DEFAULT_TYPE):
 if __name__ == '__main__':
     if os.getenv("SECRETS") is None:
         os.environ["SECRETS"] = "secrets.json"
+    if os.getenv("COOKIES") is None:
+        os.environ["COOKIES"] = "cookies.json"
 
     with open(os.getenv("SECRETS"), "r") as file:
         config = json.load(file)
@@ -359,5 +370,3 @@ if __name__ == '__main__':
     application.add_handler(MessageHandler(None, unknown_text))
 
     application.run_polling(allowed_updates=Update.ALL_TYPES)
-
-   
