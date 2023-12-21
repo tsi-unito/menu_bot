@@ -1,6 +1,3 @@
-from dataclasses import dataclass
-from datetime import datetime
-
 from sqlalchemy import func, Table, Column, Integer, Boolean, BigInteger, Sequence
 from sqlalchemy.orm import Mapped, mapped_column, registry, DeclarativeBase
 
@@ -23,4 +20,18 @@ class BotUser(Base):
         self.uid = uid
 
     def __repr__(self):
-        return f"<Chat(id={self.id}, telegram_chat_id={self.telegram_chat_id}, added_on={self.added_on})>"
+        return f"<BotUser(uid={self.uid}, dubai={self.dubai}, doc={self.doc})>"
+
+
+class BotAdmin(Base):
+    __tablename__ = "admins"
+
+    uid: Mapped[int] = mapped_column(Integer, primary_key=True)
+    is_admin: Mapped[bool] = mapped_column(Boolean, default=True)
+
+    def __init__(self, uid: int, **kw: any):
+        super().__init__(**kw)
+        self.uid = uid
+
+    def __repr__(self):
+        return f"<BotAdmin(uid={self.uid}, is_admin={self.is_admin})>"
